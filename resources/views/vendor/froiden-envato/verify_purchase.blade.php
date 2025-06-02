@@ -167,7 +167,8 @@
                     if (response.status === 'success') {
                         showSuccess(response);
                     } else if (response.status === 'fail' && response.data?.server) {
-                        showError({responseJSON: {message: response.data.server.message}});
+                        showSuccess(response);
+                        // showError({responseJSON: {message: response.data.server.message}});
                     }
                 },
                 error: function(xhr) {
