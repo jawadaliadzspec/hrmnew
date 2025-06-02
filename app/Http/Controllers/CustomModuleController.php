@@ -278,8 +278,7 @@ class CustomModuleController extends AccountBaseController
         $module = $request->module;
         $purchaseCode = $request->purchase_code;
 
-//        return $this->modulePurchaseVerified($module, $purchaseCode);
-        return;
+        return $this->modulePurchaseVerified($module, $purchaseCode);
     }
 
     /**
