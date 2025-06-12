@@ -128,10 +128,10 @@
                                         }
                                         else {
                                             if ($item->slug == 'to_do') {
-                                                $icon = "<i class='fa fa-circle mr-2 text-yellow'></i>".$item->column_name;
+                                                $icon = "<i class='fa fa-circle mr-2 text-yellow'></i>".__('app.' . $item->slug);
                                             }
                                             elseif($item->slug == 'doing'){
-                                                $icon = "<i class='fa fa-circle mr-2 text-blue'></i>".$item->column_name;
+                                                $icon = "<i class='fa fa-circle mr-2 text-blue'></i>".__('app.' . $item->slug);
                                             }
                                             else {
                                                 $icon = "<i class='fa fa-circle mr-2' style='color: " . ($item->label_color ?? '#000000') . "'></i>". $item->column_name;

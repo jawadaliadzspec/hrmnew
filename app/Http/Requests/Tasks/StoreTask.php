@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\TaskboardColumn;
 use App\Models\ProjectMilestone;
 use App\Http\Requests\CoreRequest;
+use App\Models\TaskSetting;
 use App\Traits\CustomFieldsRequestTrait;
 
 class StoreTask extends CoreRequest
@@ -45,6 +46,7 @@ class StoreTask extends CoreRequest
 
 
         $setting = company();
+        $taskSetting = TaskSetting::first();
         $unassignedPermission = user()->permission('create_unassigned_tasks');
 
         $user = user();
@@ -65,7 +67,7 @@ class StoreTask extends CoreRequest
         }
 
 
-        if(in_array('client', user_roles()))
+        if(in_array('client', user_roles()) || $taskSetting->project_required == 'yes')
         {
             $rules['project_id'] = 'required';
         }

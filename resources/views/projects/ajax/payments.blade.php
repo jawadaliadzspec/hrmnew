@@ -50,7 +50,7 @@ $addPaymentPermission = user()->permission('add_payments');
 
                 <!-- RESET START -->
                 <div class="select-box d-flex py-2 px-lg-2 px-md-2 px-0 mt-4">
-                    <x-forms.button-secondary class="btn-xs d-none height-35" id="reset-filters" icon="times-circle">
+                    <x-forms.button-secondary class="btn-xs d-none height-35 mt-2" id="reset-filters" icon="times-circle">
                         @lang('app.clearFilters')
                     </x-forms.button-secondary>
                 </div>

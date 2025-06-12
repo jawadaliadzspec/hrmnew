@@ -772,12 +772,19 @@
                 var currentLatitude = document.getElementById("current-latitude").value;
                 var currentLongitude = document.getElementById("current-longitude").value;
 
+                var clockOutLocation = document.getElementById("clock_out_location").value;
+                var clockOutWorkFromType = document.getElementById("clock_out_work_from_type").value;
+                var clockOutWorkFrom = document.getElementById("clock_out_working_from").value;
+
                 $.easyAjax({
                     url: "{{ route('attendances.update_clock_in') }}",
                     type: "GET",
                     data: {
                         currentLatitude: currentLatitude,
                         currentLongitude: currentLongitude,
+                        clockOutLocation: clockOutLocation,
+                        clockOutWorkFromType: clockOutWorkFromType,
+                        clockOutWorkFrom: clockOutWorkFrom,
                         _token: token,
                         id: '{{ $currentClockIn->id }}'
                     },

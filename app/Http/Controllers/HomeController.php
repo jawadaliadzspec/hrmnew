@@ -792,10 +792,10 @@ class HomeController extends Controller
 
         $this->company = Company::where('hash', $id)->firstOrFail();
 
-        App::setLocale($this->company->locale);
-        Carbon::setLocale($this->company->locale);
-        setlocale(LC_TIME, $this->company->locale . '_' . mb_strtoupper($this->company->locale));
-
+        $this->locale = request()->get('lang', $this->company->locale);
+        App::setLocale($this->locale);
+        Carbon::setLocale($this->locale);
+        setlocale(LC_TIME, $this->locale . '_' . mb_strtoupper($this->locale));
 
         $this->groups = TicketGroup::where('company_id', $this->company->id)->get();
         $this->ticketFormFields = TicketCustomForm::with('customField')

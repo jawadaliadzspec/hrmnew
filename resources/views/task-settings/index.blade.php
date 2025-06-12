@@ -36,7 +36,7 @@
                             fieldName="before_days" fieldId="before_days" :fieldValue="company()->before_days" />
                     </div>
 
-                    <div class="col-lg-6">
+                    <div class="col-lg-3">
                         <div class="form-group my-3">
                             <label class="f-14 text-dark-grey mb-12 w-100"
                                 for="usr">@lang('modules.tasks.onDeadlineReminder')</label>
@@ -46,6 +46,21 @@
                                 </x-forms.radio>
                                 <x-forms.radio fieldId="deadline-no" :fieldLabel="__('app.no')" fieldValue="no"
                                     fieldName="on_deadline" :checked="company()->on_deadline == 'no'">
+                                </x-forms.radio>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="form-group my-3">
+                            <label class="f-14 text-dark-grey mb-12 w-100"
+                                for="usr">@lang('modules.tasks.isProjectRequired')</label>
+                            <div class="d-flex">
+                                <x-forms.radio fieldId="isProjectRequired-yes" :fieldLabel="__('app.yes')" fieldValue="yes"
+                                    fieldName="isProjectRequired" :checked="$taskSetting->project_required == 'yes'">
+                                </x-forms.radio>
+                                <x-forms.radio fieldId="isProjectRequired-no" :fieldLabel="__('app.no')" fieldValue="no"
+                                    fieldName="isProjectRequired" :checked="$taskSetting->project_required == 'no'">
                                 </x-forms.radio>
                             </div>
                         </div>

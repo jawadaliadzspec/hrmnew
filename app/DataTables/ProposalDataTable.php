@@ -17,12 +17,14 @@ class ProposalDataTable extends BaseDataTable
     private $deleteProposalPermission;
     private $viewProposalPermission;
     private $leadFilterFalse;
+    private $addProposalPermission;
 
     public function __construct($leadFilterFalse = false)
     {
         parent::__construct();
         $this->editProposalPermission = user()->permission('edit_lead_proposals');
         $this->addInvoicePermission = user()->permission('add_invoices');
+        $this->addProposalPermission = user()->permission('add_lead_proposals');
         $this->deleteProposalPermission = user()->permission('delete_lead_proposals');
         $this->viewProposalPermission = user()->permission('view_lead_proposals');
         $this->leadFilterFalse = $leadFilterFalse;
@@ -95,6 +97,10 @@ class ProposalDataTable extends BaseDataTable
                                 <i class="fa fa-trash mr-2"></i>
                                 ' . trans('app.delete') . '
                             </a>';
+                }
+
+                if ($this->addProposalPermission == 'all' || $this->addProposalPermission == 'added') {
+                    $action .= '<a href="' . route('proposals.create') . '?proposal=' . $row->id . '" class="dropdown-item"><i class="fa fa-copy mr-2"></i> ' . __('app.create') . ' ' . __('app.duplicate') . '</a>';
                 }
 
                 $action .= '</div>

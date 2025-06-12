@@ -891,7 +891,7 @@
                 });
             });
 
-            $('body').on('click', '.edit-subtask', function () {
+            $('body').off('click', '.edit-subtask').on('click', '.edit-subtask', function () {
                 var id = $(this).data('row-id');
                 var url = "{{ route('sub-tasks.edit', ':id') }}";
                 url = url.replace(':id', id);

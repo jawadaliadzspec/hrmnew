@@ -56,6 +56,7 @@ class TaskSettingController extends AccountBaseController
         $taskSetting->project = ($request->project) ? 'yes' : 'no';
         $taskSetting->start_date = ($request->start_date) ? 'yes' : 'no';
         $taskSetting->due_date = ($request->due_date) ? 'yes' : 'no';
+        $taskSetting->project_required = ($request->isProjectRequired == 'yes') ? 'yes' : 'no';
         $taskSetting->assigned_to = ($request->assigned_to) ? 'yes' : 'no';
         $taskSetting->description = ($request->description) ? 'yes' : 'no';
         $taskSetting->label = ($request->label) ? 'yes' : 'no';

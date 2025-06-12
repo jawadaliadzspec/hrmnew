@@ -27,7 +27,7 @@ class TaskListener
 
     public function handle(TaskEvent $event)
     {
-        if (!$event->task->is_private) {
+        if ($event->notificationName) {
             if ($event->notificationName == 'NewClientTask') {
                 Notification::send($event->notifyUser, new NewClientTask($event->task));
             }

@@ -50,6 +50,12 @@ class ProjectTemplateTask extends BaseModel
         return $this->belongsTo(ProjectTemplate::class);
     }
 
+    public function milestone(): BelongsTo
+    {
+        return $this->belongsTo(ProjectTemplateMilestone::class, 'milestone_id');
+    }
+
+
     public function users(): HasMany
     {
         return $this->hasMany(ProjectTemplateTaskUser::class, 'project_template_task_id');

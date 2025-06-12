@@ -72,6 +72,8 @@
 
                     <x-cards.data-row :label="__('modules.tasks.taskCategory')"
                                       :value="$task->category->category_name ?? '--'" html="true" />
+                    <x-cards.data-row :label="__('modules.projects.milestones')"
+                                      :value="$task->milestone->milestone_title ?? '--'" html="true" />
                     <x-cards.data-row :label="__('app.description')" :value="$task->description" html="true" />
 
                     @if (($taskSettings->label == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))

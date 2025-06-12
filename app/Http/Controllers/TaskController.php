@@ -350,9 +350,11 @@ class TaskController extends AccountBaseController
 
         $this->allTasks = $completedTaskColumn ? Task::where('board_column_id', '<>', $completedTaskColumn->id)->whereNotNull('due_date')->get() : [];
 
+        $viewEmployeePermission = user()->permission('view_employees');
+
         if (!is_null($this->project)) {
             if ($this->project->public) {
-                $this->employees = User::allEmployees(null, true, ($this->addPermission == 'all' ? 'all' : null));
+                $this->employees = User::allEmployees(null, true, ($viewEmployeePermission == 'all' ? 'all' : null));
 
             }
             else {
@@ -362,7 +364,7 @@ class TaskController extends AccountBaseController
         }
         else if (!is_null($this->task) && !is_null($this->task->project_id)) {
             if ($this->task->project->public) {
-                $this->employees = User::allEmployees(null, true, ($this->addPermission == 'all' ? 'all' : null));
+                $this->employees = User::allEmployees(null, true, ($viewEmployeePermission == 'all' ? 'all' : null));
             }
             else {
 
@@ -375,7 +377,7 @@ class TaskController extends AccountBaseController
 
             }
             else {
-                $this->employees = User::allEmployees(null, true, ($this->addPermission == 'all' ? 'all' : null));
+                $this->employees = User::allEmployees(null, true, ($viewEmployeePermission == 'all' ? 'all' : null));
             }
 
         }
@@ -1265,7 +1267,7 @@ class TaskController extends AccountBaseController
     }
 
     public function members($id)
-    { 
+    {
         $options = '<option value="">--</option>';
 
         if ($id != 0) {
@@ -1279,10 +1281,12 @@ class TaskController extends AccountBaseController
                 }
             }
 
-            $startDate = $members->start_date ? $members->start_date->format('Y-m-d') : null;
+            $startDateMin = $members->start_date ? $members->start_date->format('Y-m-d') : null;
+            $startDate = $members->start_date && $members->start_date->lt(now()) ? now()->format('Y-m-d') : ($members->start_date ? $members->start_date->format('Y-m-d') : null);
+            info ($startDate);
         }
 
-        return Reply::dataOnly(['status' => 'success', 'data' => $options, 'startDate' => $startDate]);
+        return Reply::dataOnly(['status' => 'success', 'data' => $options, 'startDate' => $startDate, 'startDateMin' => $startDateMin]);
     }
 
     public function reminder()

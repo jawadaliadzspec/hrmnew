@@ -35,11 +35,14 @@
                         </td>
                     @endif
                     <td class="border-bottom-0">
-                        <input type="number" min="1" class="form-control f-14 border-0 w-100 text-right quantity"
+                        <input type="number" min="1" class="form-control f-14 border-0 w-100 text-right quantity mt-3"
                             data-item-id="{{ $items->id }}" value="1" name="quantity[]">
+                        <span class="text-dark-grey float-right border-0 f-12">{{ $items->unit->unit_type }}</span>
+                        <input type="hidden" name="product_id[]" value="{{ $items->id }}">
+                        <input type="hidden" name="unit_id[]" value="{{ $items->unit_id }}">
                     </td>
                     <td class="border-bottom-0">
-                        <input type="number" min="1" class="f-14 border-0 w-100 text-right cost_per_item"
+                        <input type="number" min="1" class="f-14 border-0 w-100 text-right cost_per_item form-control"
                             data-item-id="{{ $items->id }}" placeholder="{{ $items->price }}"
                             value="{{ $items->price }}" name="cost_per_item[]">
                     </td>
@@ -69,7 +72,7 @@
 
                     <td class="border-left-0">
                         <input type="file" class="dropify" id="dropify" name="invoice_item_image[]" data-allowed-file-extensions="png jpg jpeg bmp" data-messages-default="test" data-height="70"
-                        data-default-file="{{ $items->image_url }}" />
+                            data-default-file="{{ $items->image_url }}" />
                         <input type="hidden" name="invoice_item_image_url[]" value="{{ $items->image }}">
                     </td>
                 </tr>
@@ -87,11 +90,14 @@
                 messages: dropifyMessages
             });
 
-            var quantity = $('#sortable').find('.quantity[data-item-id="{{ $items->id }}"]').val();
-            var perItemCost = $('#sortable').find('.cost_per_item[data-item-id="{{ $items->id }}"]').val();
-            var amount = (quantity * perItemCost);
-            $('#sortable').find('.amount[data-item-id="{{ $items->id }}"]').val(amount);
-            $('#sortable').find('.amount-html[data-item-id="{{ $items->id }}"]').html(amount);
+            for(i=0;i<$('.quantity').length;i++)
+            {
+                var quantity = $('.quantity').eq(i).val();
+                var perItemCost = $('.cost_per_item').eq(i).val();
+                var amount = (quantity * perItemCost);
+                $('.amount').eq(i).val(amount);
+                $('.amount-html').eq(i).html(amount);
+            }
 
             calculateTotal();
         });

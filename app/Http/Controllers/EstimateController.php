@@ -30,6 +30,7 @@ use App\DataTables\EstimatesDataTable;
 use App\Http\Requests\EstimateAcceptRequest;
 use App\Models\EstimateRequest;
 use App\Helper\UserService;
+use App\Models\Project;
 
 class EstimateController extends AccountBaseController
 {
@@ -101,6 +102,8 @@ class EstimateController extends AccountBaseController
             $this->estimateRequestId = $this->estimateTemplate->id;
         }
 
+        // this data is sent from project and client invoices
+        $this->project = request('project_id') ? Project::findOrFail(request('project_id')) : null;
 
         $estimate = new Estimate();
         $getCustomFieldGroupsWithFields = $estimate->getCustomFieldGroupsWithFields();

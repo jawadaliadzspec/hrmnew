@@ -23,6 +23,9 @@
 
             <x-tab :href="route('project-template.show', $template->id).'?tab=tasks'" :text="__('app.menu.tasks')" class="tasks"
                 ajax="false" />
+                
+            <x-tab :href="route('project-template.show', $template->id).'?tab=milestones'" :text="__('modules.projects.milestones')" class="milestones"
+                ajax="false" />
 
         </div>
 

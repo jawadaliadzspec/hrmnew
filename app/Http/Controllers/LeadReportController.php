@@ -43,6 +43,8 @@ class LeadReportController extends AccountBaseController
     public function index()
     {
 
+        abort_403(user()->permission('view_lead_report') != 'all');
+
         $tab = request('tab');
         $this->pageTitle = 'app.menu.deal';
         $this->view = 'reports.lead.profile';

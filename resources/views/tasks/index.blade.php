@@ -450,7 +450,7 @@ $viewPermission = user()->permission('view_tasks');
 
         $('#reset-filters,#reset-filters-2').click(function() {
             $('#filter-form')[0].reset();
-            
+
             document.getElementById('filter-my-task').style.setProperty('background-color', '#ffff', 'important');
             document.getElementById('filter-my-task').style.setProperty('color', '#616e80', 'important');
             document.getElementById('filter-my-task').style.setProperty('border', '1px solid #616e80', 'important');

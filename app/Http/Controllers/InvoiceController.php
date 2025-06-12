@@ -73,8 +73,7 @@ class InvoiceController extends AccountBaseController
 
             if (in_array('client', user_roles())) {
                 $this->clients = User::client();
-            }
-            else {
+            } else {
                 $this->clients = User::allClients();
             }
         }
@@ -142,12 +141,10 @@ class InvoiceController extends AccountBaseController
         $this->units = UnitType::all();
         $this->taxes = Tax::all();
 
-        if (module_enabled('Purchase')){
+        if (module_enabled('Purchase')) {
             /** @phpstan-ignore-next-line */
             $this->products = Product::with('inventory')->get();
-        }
-        else
-        {
+        } else {
             $this->products = Product::all();
         }
 
@@ -162,7 +159,7 @@ class InvoiceController extends AccountBaseController
 
         $bankAccounts = BankAccount::where('status', 1)->where('currency_id', company()->currency_id);
 
-        if($this->viewBankAccountPermission == 'added'){
+        if ($this->viewBankAccountPermission == 'added') {
             $bankAccounts = $bankAccounts->where('added_by', $this->userId);
         }
 
@@ -200,7 +197,6 @@ class InvoiceController extends AccountBaseController
         }
 
         return view('invoices.create', $this->data);
-
     }
 
     public function store(StoreInvoice $request)
@@ -210,21 +206,21 @@ class InvoiceController extends AccountBaseController
         $stockAdjustment = [];
         $userId = UserService::getUserId();
 
-        if ((module_enabled('Purchase') && in_array('purchase', user_modules()) && $request->do_it_later == 'direct'))
-        {
-            if(is_array($product)) {
+        if ((module_enabled('Purchase') && in_array('purchase', user_modules()) && $request->do_it_later == 'direct')) {
+            if (is_array($product)) {
 
                 $serviceProductIds = Product::whereIn('id', $product)->where('type', 'service')->pluck('id')->toArray();
                 $nonServiceProductIds = array_diff($product, $serviceProductIds);
 
                 foreach ($nonServiceProductIds as $key => $productId) {
                     if (!is_null($productId)) {
-                        if(!isset($stockAdjustment[$productId])){
+                        if (!isset($stockAdjustment[$productId])) {
                             $stockAdjustment[$productId] = 0;
                         }
 
 
-                    $stockAdjustment[$productId] += $quantity[$key];}
+                        $stockAdjustment[$productId] += $quantity[$key];
+                    }
                 }
             }
 
@@ -233,23 +229,19 @@ class InvoiceController extends AccountBaseController
                 $invoiceQuery->where('status', 'unpaid');
             })->get();
 
-            foreach ($stockAdjustment as $index => $quantityCount)
-            {
+            foreach ($stockAdjustment as $index => $quantityCount) {
                 $commitedStock = $invoiceItems->filter(function ($value, $key) use ($index) {
                     return $value->product_id == $index;
                 })->sum('quantity');
 
                 $quantity = PurchaseStockAdjustment::where('product_id', $index)->sum('net_quantity');
 
-                if (($quantity - $commitedStock) < $quantityCount)
-                {
+                if (($quantity - $commitedStock) < $quantityCount) {
                     $check[] = $index;
-
                 }
             }
 
-            if(!empty($check))
-            {
+            if (!empty($check)) {
                 return Reply::dataOnly(['status' => 'error', 'data' => $check, 'showValue' => true, 'title' => $this->pageTitle]);
             }
         }
@@ -348,16 +340,15 @@ class InvoiceController extends AccountBaseController
         if ($request->has('shipping_address') || $request->has('billing_address')) {
             if ($invoice->project_id != null && $invoice->project_id != '') {
                 $client = $invoice->project->clientdetails;
-            }
-            elseif ($invoice->client_id != null && $invoice->client_id != '') {
+            } elseif ($invoice->client_id != null && $invoice->client_id != '') {
                 $client = $invoice->clientdetails;
             }
 
             if (isset($client)) {
-                if(isset($request->shipping_address)){
+                if (isset($request->shipping_address)) {
                     $client->shipping_address = $request->shipping_address;
                 }
-                if(isset($request->billing_address)){
+                if (isset($request->billing_address)) {
                     $client->address = $request->billing_address;
                 }
                 $client->save();
@@ -413,18 +404,17 @@ class InvoiceController extends AccountBaseController
         $this->products = PurchaseProduct::whereIn('id', $productIDsArray)->get();
 
         return view('invoices.ajax.comitted_model', $this->data);
-
     }
 
     public function applyQuickAction(Request $request)
     {
         switch ($request->action_type) {
-        case 'delete':
-            $this->deleteRecords($request);
+            case 'delete':
+                $this->deleteRecords($request);
 
-            return Reply::success(__('messages.deleteSuccess'));
-        default:
-            return Reply::error(__('messages.selectAction'));
+                return Reply::success(__('messages.deleteSuccess'));
+            default:
+                return Reply::error(__('messages.selectAction'));
         }
     }
 
@@ -445,8 +435,7 @@ class InvoiceController extends AccountBaseController
                 Invoice::destroy($id);
 
                 return Reply::success(__('messages.deleteSuccess'));
-            }
-            else {
+            } else {
                 return Reply::error(__('messages.invoiceCanNotDeleted'));
             }
         }
@@ -473,8 +462,7 @@ class InvoiceController extends AccountBaseController
             Invoice::destroy($id);
 
             return Reply::success(__('messages.deleteSuccess'));
-        }
-        else {
+        } else {
             return Reply::error(__('messages.invoiceCanNotDeleted'));
         }
     }
@@ -543,8 +531,7 @@ class InvoiceController extends AccountBaseController
         if ($this->invoice->discount > 0) {
             if ($this->invoice->discount_type == 'percent') {
                 $this->discount = (($this->invoice->discount / 100) * $this->invoice->sub_total);
-            }
-            else {
+            } else {
                 $this->discount = $this->invoice->discount;
             }
         }
@@ -562,19 +549,13 @@ class InvoiceController extends AccountBaseController
 
                     if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = ($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100);
-
-                    }
-                    else {
+                    } else {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $item->amount * ($this->tax->rate_percent / 100);
                     }
-
-                }
-                else {
+                } else {
                     if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + (($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100));
-
-                    }
-                    else {
+                    } else {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + ($item->amount * ($this->tax->rate_percent / 100));
                     }
                 }
@@ -624,13 +605,10 @@ class InvoiceController extends AccountBaseController
         if ($this->invoice->discount > 0) {
             if ($this->invoice->discount_type == 'percent') {
                 $this->discount = (($this->invoice->discount / 100) * $this->invoice->sub_total);
-
-            }
-            else {
+            } else {
                 $this->discount = $this->invoice->discount;
             }
-        }
-        else {
+        } else {
             $this->discount = 0;
         }
 
@@ -650,19 +628,13 @@ class InvoiceController extends AccountBaseController
 
                         if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                             $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = ($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100);
-
-                        }
-                        else {
+                        } else {
                             $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $item->amount * ($this->tax->rate_percent / 100);
                         }
-
-                    }
-                    else {
+                    } else {
                         if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                             $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + (($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100));
-
-                        }
-                        else {
+                        } else {
                             $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + ($item->amount * ($this->tax->rate_percent / 100));
                         }
                     }
@@ -741,7 +713,7 @@ class InvoiceController extends AccountBaseController
 
         $bankAccounts = BankAccount::where('status', 1)->where('currency_id', $this->invoice->currency_id);
 
-        if($this->viewBankAccountPermission == 'added'){
+        if ($this->viewBankAccountPermission == 'added') {
             $bankAccounts = $bankAccounts->where('added_by', $this->userId);
         }
 
@@ -765,7 +737,6 @@ class InvoiceController extends AccountBaseController
         $this->view = 'invoices.ajax.edit';
 
         return view('invoices.create', $this->data);
-
     }
 
     public function update(UpdateInvoice $request, $id)
@@ -785,14 +756,14 @@ class InvoiceController extends AccountBaseController
                 $serviceProductIds = Product::whereIn('id', $product)->where('type', 'service')->pluck('id')->toArray();
                 $nonServiceProductIds = array_diff($product, $serviceProductIds);
 
-                foreach ($nonServiceProductIds as $key => $productId)
-                {
-                    if (!is_null($productId))
-                    {    if(!isset($stockAdjustment[$productId])){
-                        $stockAdjustment[$productId] = 0;
-                    }
+                foreach ($nonServiceProductIds as $key => $productId) {
+                    if (!is_null($productId)) {
+                        if (!isset($stockAdjustment[$productId])) {
+                            $stockAdjustment[$productId] = 0;
+                        }
 
-                    $stockAdjustment[$productId] += $quantity[$key];}
+                        $stockAdjustment[$productId] += $quantity[$key];
+                    }
                 }
             }
 
@@ -801,8 +772,7 @@ class InvoiceController extends AccountBaseController
                 $invoiceQuery->where('status', 'unpaid');
             })->get();
 
-            foreach ($stockAdjustment as $index => $quantityCount)
-            {
+            foreach ($stockAdjustment as $index => $quantityCount) {
                 $commitedStock = $invoiceItems->filter(function ($value, $key) use ($index) {
                     return $value->product_id == $index;
                 })->sum('quantity');
@@ -812,14 +782,12 @@ class InvoiceController extends AccountBaseController
                 $productQty = $productQuantity->quantity;
                 $remainingStock = $commitedStock - $productQty;
 
-                if (($remainingStock + $quantityCount) > $qty)
-                {
+                if (($remainingStock + $quantityCount) > $qty) {
                     $check[] = $index;
                 }
             }
 
-            if(!empty($check && $productId))
-            {
+            if (!empty($check && $productId)) {
                 return Reply::dataOnly(['status' => 'error', 'data' => $check, 'showValue' => true, 'title' => $this->pageTitle]);
             }
         }
@@ -888,8 +856,7 @@ class InvoiceController extends AccountBaseController
         if ($request->has('shipping_address') || $request->has('billing_address')) {
             if ($invoice->project_id != null && $invoice->project_id != '') {
                 $client = $invoice->project->clientdetails;
-            }
-            elseif ($invoice->client_id != null && $invoice->client_id != '') {
+            } elseif ($invoice->client_id != null && $invoice->client_id != '') {
                 $client = $invoice->clientdetails;
             }
 
@@ -945,16 +912,15 @@ class InvoiceController extends AccountBaseController
         if ($this->invoice->discount > 0) {
             if ($this->invoice->discount_type == 'percent') {
                 $this->discount = (($this->invoice->discount / 100) * $this->invoice->sub_total);
-            }
-            else {
+            } else {
                 $this->discount = $this->invoice->discount;
             }
         }
 
-        if($this->invoice->discount_type == 'percent') {
+        if ($this->invoice->discount_type == 'percent') {
             $discountAmount = $this->invoice->discount;
-            $this->discountType = $discountAmount.'%';
-        }else {
+            $this->discountType = $discountAmount . '%';
+        } else {
             $discountAmount = $this->invoice->discount;
             $this->discountType = currency_format($discountAmount, $this->invoice->currency_id);
         }
@@ -974,19 +940,13 @@ class InvoiceController extends AccountBaseController
 
                     if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = ($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100);
-
-                    }
-                    else {
+                    } else {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $item->amount * ($this->tax->rate_percent / 100);
                     }
-
-                }
-                else {
+                } else {
                     if ($this->invoice->calculate_tax == 'after_discount' && $this->discount > 0) {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + (($item->amount - ($item->amount / $this->invoice->sub_total) * $this->discount) * ($this->tax->rate_percent / 100));
-
-                    }
-                    else {
+                    } else {
                         $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] = $taxList[$this->tax->tax_name . ': ' . $this->tax->rate_percent . '%'] + ($item->amount * ($this->tax->rate_percent / 100));
                     }
                 }
@@ -1003,7 +963,7 @@ class InvoiceController extends AccountBaseController
         $this->credentials = PaymentGatewayCredentials::first();
         $this->methods = OfflinePaymentMethod::activeMethod();
 
-        if(in_array('client', user_roles())) {
+        if (in_array('client', user_roles())) {
             $lastViewed = now();
             $ipAddress = request()->ip();
             $this->invoice->last_viewed = $lastViewed;
@@ -1012,14 +972,13 @@ class InvoiceController extends AccountBaseController
         }
 
         return view('invoices.show', $this->data);
-
     }
 
     public function approveOfflineInvoice($invoiceID)
     {
         $invoice = Invoice::with(['project', 'project.client', 'payment'])->findOrFail($invoiceID);
 
-        if($invoice){
+        if ($invoice) {
 
             $payment = Payment::findOrFail($invoice->payment[0]->id);
 
@@ -1028,7 +987,7 @@ class InvoiceController extends AccountBaseController
                 $invoiceAmt = (float)($invoice->total);
                 $paymentAmt = (float)($payment->amount);
 
-                if($invoiceAmt > $paymentAmt){
+                if ($invoiceAmt > $paymentAmt) {
                     $invoice->status = 'partial';
                 }
                 $invoice->status = 'paid';
@@ -1042,11 +1001,10 @@ class InvoiceController extends AccountBaseController
 
             if ($invoice->project_id != null && $invoice->project_id != '') {
                 $notifyUser = $invoice->project->client;
-            }
-            elseif ($invoice->client_id != null && $invoice->client_id != '') {
+            } elseif ($invoice->client_id != null && $invoice->client_id != '') {
                 $notifyUser = $invoice->client;
             }
-            if (isset($notifyUser) && !is_null($notifyUser) ) {
+            if (isset($notifyUser) && !is_null($notifyUser)) {
                 event(new NewPaymentEvent($payment, $notifyUser));
             }
 
@@ -1060,8 +1018,7 @@ class InvoiceController extends AccountBaseController
 
         if ($invoice->project_id != null && $invoice->project_id != '') {
             $notifyUser = $invoice->project->client;
-        }
-        elseif ($invoice->client_id != null && $invoice->client_id != '') {
+        } elseif ($invoice->client_id != null && $invoice->client_id != '') {
             $notifyUser = $invoice->client;
         }
         if (isset($notifyUser) && !is_null($notifyUser) && request()->data_type != 'mark_as_send') {
@@ -1076,14 +1033,12 @@ class InvoiceController extends AccountBaseController
 
         $invoice->save();
 
-        if(request()->data_type == 'mark_as_send'){
+        if (request()->data_type == 'mark_as_send') {
             return Reply::success(__('messages.invoiceMarkAsSent'));
         }
 
-        else {
-            return Reply::success(__('messages.invoiceSentSuccessfully'));
-        }
 
+        return Reply::success(__('messages.invoiceSentSuccessfully'));
     }
 
     public function remindForPayment($id)
@@ -1092,8 +1047,7 @@ class InvoiceController extends AccountBaseController
 
         if ($invoice->project_id != null && $invoice->project_id != '') {
             $notifyUser = $invoice->project->client;
-        }
-        elseif ($invoice->client_id != null && $invoice->client_id != '') {
+        } elseif ($invoice->client_id != null && $invoice->client_id != '') {
             $notifyUser = $invoice->client;
         }
         if (isset($notifyUser) && !is_null($notifyUser)) {
@@ -1110,9 +1064,9 @@ class InvoiceController extends AccountBaseController
 
         $exchangeRate = Currency::findOrFail($request->currencyId);
 
-        if($exchangeRate->exchange_rate == $request->exchangeRate){
+        if ($exchangeRate->exchange_rate == $request->exchangeRate) {
             $exRate = $exchangeRate->exchange_rate;
-        }else{
+        } else {
             $exRate = floatval($request->exchangeRate ?: 1);
         }
 
@@ -1120,13 +1074,11 @@ class InvoiceController extends AccountBaseController
             if ($this->items->total_amount != '') {
                 /** @phpstan-ignore-next-line */
                 $this->items->price = floor($this->items->total_amount / $exRate);
-            }
-            else {
+            } else {
 
                 $this->items->price = floatval($this->items->price) / floatval($exRate);
             }
-        }
-        else {
+        } else {
             if ($this->items->total_amount != '') {
                 $this->items->price = $this->items->total_amount;
             }
@@ -1258,8 +1210,7 @@ class InvoiceController extends AccountBaseController
 
         if (!is_null($this->invoice->client_id)) {
             $client = $this->invoice->client;
-        }
-        else if (!is_null($this->invoice->project_id) && !is_null($this->invoice->project->client_id)) {
+        } else if (!is_null($this->invoice->project_id) && !is_null($this->invoice->project->client_id)) {
             $client = $this->invoice->project->client;
         }
 
@@ -1334,7 +1285,7 @@ class InvoiceController extends AccountBaseController
 
         $clientPayment = new Payment();
         $clientPayment->currency_id = isset($invoice) ? $invoice->currency_id : $order->currency_id;
-        $clientPayment->invoice_id = isset($invoice) ? $invoice->id: null;
+        $clientPayment->invoice_id = isset($invoice) ? $invoice->id : null;
         $clientPayment->project_id = isset($invoice) ? $invoice->project_id : null;
         $clientPayment->order_id = $request->orderID;
         $clientPayment->amount = isset($invoice) ? $invoice->total : $order->total;
@@ -1350,7 +1301,7 @@ class InvoiceController extends AccountBaseController
 
         $clientPayment->save();
 
-        if(isset($invoice)){
+        if (isset($invoice)) {
             $invoice->status = 'pending-confirmation';
             $invoice->save();
         }
@@ -1431,8 +1382,7 @@ class InvoiceController extends AccountBaseController
             $this->clients = User::allClients();
             $exchangeRate = company()->currency->exchange_rate;
             $currencyName = company()->currency->currency_code;
-        }
-        else {
+        } else {
             $this->client = Project::with('currency')->where('id', $projectID)->with('client')->first();
             $this->companyName = '';
             $this->clientId = '';
@@ -1496,12 +1446,10 @@ class InvoiceController extends AccountBaseController
                 $view = view('invoices.show_shipping_address_input')->render();
 
                 return Reply::dataOnly(['view' => $view]);
-            }
-            else {
+            } else {
                 return Reply::dataOnly(['show' => 'false']);
             }
-        }
-        else {
+        } else {
             return Reply::dataOnly(['switch' => 'off']);
         }
     }
@@ -1551,7 +1499,7 @@ class InvoiceController extends AccountBaseController
     public function getclients($id)
     {
         $unitId = UnitType::where('id', $id)->first();
-        return Reply::dataOnly(['status' => 'success', 'type' => $unitId] );
+        return Reply::dataOnly(['status' => 'success', 'type' => $unitId]);
     }
 
     public function productCategory(Request $request)
@@ -1564,7 +1512,7 @@ class InvoiceController extends AccountBaseController
 
         $categorisedProduct = $categorisedProduct->get();
 
-        return Reply::dataOnly(['status' => 'success', 'data' => $categorisedProduct] );
+        return Reply::dataOnly(['status' => 'success', 'data' => $categorisedProduct]);
     }
 
     public function offlineDescription(Request $request)
@@ -1572,12 +1520,11 @@ class InvoiceController extends AccountBaseController
         $id = $request->id;
 
         $offlineMethod = $id ? OfflinePaymentMethod::findOrFail($id) : '';
-        $description = $offlineMethod ? '<span class="float-left">'.$offlineMethod->description.'</span>' : '';
+        $description = $offlineMethod ? '<span class="float-left">' . $offlineMethod->description . '</span>' : '';
 
-        if($offlineMethod && $offlineMethod->image){
-            $description .= '<span class="float-right"><img src="'.$offlineMethod->image_url.'" width="100px" height="100px"/></span>';
+        if ($offlineMethod && $offlineMethod->image) {
+            $description .= '<span class="float-right"><img src="' . $offlineMethod->image_url . '" width="100px" height="100px"/></span>';
         }
         return Reply::dataOnly(['status' => 'success', 'description' => $description]);
     }
-
 }

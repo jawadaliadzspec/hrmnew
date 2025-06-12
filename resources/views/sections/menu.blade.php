@@ -338,6 +338,11 @@
                                      :text="__('app.menu.timeLogReport')" />
                 @endif
 
+               @if ($sidebarUserPermissions['view_time_log_report'] == 4 && $sidebarUserPermissions['view_time_log_report'] != 'none' && in_array('timelogs', user_modules()))
+                    <x-sub-menu-item :link="route('time-log-weekly-report.index')"
+                                     :text="__('app.menu.weeklyTimehsheet')" />
+                @endif
+
                 @if ($sidebarUserPermissions['view_finance_report'] != 5 && $sidebarUserPermissions['view_finance_report'] != 'none' && in_array('payments', user_modules()))
                     <x-sub-menu-item :link="route('finance-report.index')"
                                      :text="__('app.menu.financeReport')" />

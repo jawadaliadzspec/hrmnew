@@ -217,8 +217,8 @@
                         dp1.setDate(new Date(data.startDate), true);
                         dp2.setDate(new Date(data.startDate), true);
 
-                        dp1.setMin(new Date(data.startDate));
-                        dp2.setMin(new Date(data.startDate));
+                        dp1.setMin(new Date(data.startDateMin));
+                        dp2.setMin(new Date(data.startDateMin));
                     }
                 }
             })
@@ -239,10 +239,10 @@
             blockUI: true,
             redirect: true,
             success: function(data) {
-                if (data.startDate) {
+                if (data.startDateMin) {
                     
-                        dp1.setMin(new Date(data.startDate));
-                        dp2.setMin(new Date(data.startDate));
+                        dp1.setMin(new Date(data.startDateMin));
+                        dp2.setMin(new Date(data.startDateMin));
                 }
             }
         });

@@ -121,7 +121,10 @@ use App\Http\Controllers\LeadContactController;
 use App\Http\Controllers\NoticeFileController;
 use App\Http\Controllers\InvoicePaymentDetailController;
 use App\Http\Controllers\MyCalendarController;
+use App\Http\Controllers\ProjectSubCategoryController;
+use App\Http\Controllers\ProjectTemplateMilestoneController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\TimelogWeeklyApprovalController;
 use App\Http\Controllers\WeeklyTimesheetController;
 
 
@@ -229,6 +232,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     /* PROJECTS */
     Route::resource('projectCategory', ProjectCategoryController::class);
     Route::post('projects/change-status', [ProjectController::class, 'changeProjectStatus'])->name('projects.change_status');
+    
+    Route::resource('ProjectSubCategory', ProjectSubCategoryController::class);
+    Route::get('get_project_sub_category/{id}', [ProjectSubCategoryController::class, 'getSubCategories'])->name('project.get_project_sub_category');
+    
 
     Route::group(
         ['prefix' => 'projects'],
@@ -264,8 +271,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
             Route::resource('files', ProjectFileController::class);
 
             Route::get('milestones/byProject/{id}', [ProjectMilestoneController::class, 'byProject'])->name('milestones.by_project');
-            Route::resource('milestones', ProjectMilestoneController::class);
             Route::post('/milestones/{id}/update-status', [ProjectMilestoneController::class, 'updateStatus'])->name('milestones.updateStatus');
+            Route::resource('milestones', ProjectMilestoneController::class);
 
 
             // Discussion category routes
@@ -290,7 +297,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
             Route::post('project-template-members/save-group', [ProjectTemplateMemberController::class, 'storeGroup'])->name('project_template_members.store_group');
             Route::resource('project-template-member', ProjectTemplateMemberController::class);
             Route::get('project-template-task/data/{templateId?}', [ProjectTemplateTaskController::class, 'data'])->name('project_template_task.data');
+            Route::get('project-template-milestones/byProject/{id}', [ProjectTemplateMilestoneController::class, 'byProject'])->name('project-template-milestone.by_project');
+            Route::post('/project-template-milestones/{id}/update-status', [ProjectTemplateMilestoneController::class, 'updateStatus'])->name('project-template-milestone.updateStatus');
             Route::resource('project-template-task', ProjectTemplateTaskController::class);
+            Route::resource('project-template-milestone', ProjectTemplateMilestoneController::class);
             Route::resource('project-template-sub-task', ProjectTemplateSubTaskController::class);
             Route::resource('project-calendar', ProjectCalendarController::class);
 
@@ -772,6 +782,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::post('tickets/change-status', [TicketController::class, 'changeStatus'])->name('tickets.change-status');
     Route::post('tickets/refreshCount', [TicketController::class, 'refreshCount'])->name('tickets.refresh_count');
     Route::get('tickets/agent-group/{id}/{exceptThis?}', [TicketController::class, 'agentGroup'])->name('tickets.agent_group');
+    Route::get('tickets/edit-details/{id}', [TicketController::class, 'editDetail'])->name('tickets.edit_detail');
+    Route::put('tickets/update-details/{id}', [TicketController::class, 'updateDetail'])->name('tickets.update_detail');
     Route::resource('tickets', TicketController::class);
 
     // Ticket Custom Embed From
@@ -796,6 +808,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::get('project-wise-timelog/report/export', [TimelogReportController::class,'exportProjectWiseTimeLog'])->name('project-wise-timelog.export');
     Route::resource('time-log-report', TimelogReportController::class);
     Route::post('time-log-report-time', [TimelogReportController::class, 'totalTime'])->name('time-log-report.time');
+    
+    Route::resource('time-log-weekly-report', TimelogWeeklyApprovalController::class);
+    Route::get('weekly-pending-time-log-report', [TimelogWeeklyApprovalController::class,'pendingTimelogReportIndex'])->name('weekly-pending-time-log-report.report');
 
     Route::post('finance-report-chart', [FinanceReportController::class, 'financeChartData'])->name('finance-report.chart');
     Route::resource('finance-report', FinanceReportController::class);

@@ -246,11 +246,12 @@ class Attendance extends BaseModel
     {
         $attendance = Attendance::without('company')
             ->join('users', 'users.id', '=', 'attendances.user_id')
-            ->leftJoin('company_addresses', 'company_addresses.id', '=', 'attendances.location_id')
+            ->leftJoin('company_addresses as clock_in_location', 'clock_in_location.id', '=', 'attendances.location_id')
+            ->leftJoin('company_addresses as clock_out_location', 'clock_out_location.id', '=', 'attendances.clock_out_time_location_id')
             ->whereBetween('attendances.clock_in_time', [$startDate->copy()->subDay(), $endDate->copy()->addDay()])
             ->where('attendances.user_id', '=', $userId)
             ->orderBy('attendances.clock_in_time', 'desc')
-            ->select('attendances.*', 'users.*', 'attendances.id as aId', 'company_addresses.location')
+            ->select('attendances.*', 'users.*', 'attendances.id as aId', 'clock_in_location.location as location', 'clock_out_location.location as clockOutLocation')
             ->get();
 
         // Filter the attendance by date due to the timezone issue

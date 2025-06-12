@@ -128,6 +128,7 @@ return array (
     'view_project_expenses' => 'View Project Expenses',
     'view_project_tasks' => 'View Project Tasks',
     'view_project_invoices' => 'View Project Invoices',
+    'view_project_estimates' => 'View Project Estimates',
     'view_project_orders' => 'View Project Orders',
     'view_project_burndown_chart' => 'View Project Burndown Chart',
     'view_project_payments' => 'View Project Payments',

@@ -162,7 +162,7 @@ class DealObserver
 
                     if (session('leads_count') == session('total_leads')) {
 
-                        info('testing');
+
 
                         $admins = User::allAdmins(company()->id);
                         Notification::send($admins, new LeadImported());

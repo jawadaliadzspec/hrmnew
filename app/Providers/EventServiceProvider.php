@@ -382,6 +382,7 @@ use App\Listeners\NewEstimateRequestListener;
 use App\Listeners\PromotionAddedListener;
 use App\Listeners\ShiftRotationListener;
 use App\Models\NoticeFile;
+use App\Models\ProjectTemplateMilestone;
 use App\Models\Promotion;
 use App\Observers\InvoiceObserver;
 use App\Observers\InvoiceRecurringObserver;
@@ -445,6 +446,7 @@ use App\Observers\InvoiceFileObserver;
 use App\Observers\LeadPipelineObserver;
 use App\Observers\LeadStageObserver;
 use App\Observers\NoticeFileObserver;
+use App\Observers\ProjectTemplateMilestoneObserver;
 use App\Observers\PromotionObserver;
 use App\Observers\TaskLabelListObserver;
 use App\Observers\TaskNoteObserver;
@@ -693,6 +695,7 @@ class EventServiceProvider extends ServiceProvider
         Award::class => [AwardObserver::class],
         Appreciation::class => [AppreciationObserver::class],
         ProjectTemplate::class => [ProjectTemplateObserver::class],
+        ProjectTemplateMilestone::class => [ProjectTemplateMilestoneObserver::class],
         ExpensesCategory::class => [ExpensesCategoryObserver::class],
         ExpensesCategoryRole::class => [ExpensesCategoryRoleObserver::class],
         DiscussionFile::class => [DiscussionFileObserver::class],

@@ -36,7 +36,7 @@
                                 <i class="fa fa-edit icons mr-1"></i> @lang('app.edit')
                             </a>
                         </div>
-                        @if ($status->default_status == 0)
+                        @if ($status->default_status == 0 && $status->status_name != 'finished')
                             <div class="task_view mt-1 mt-lg-0 mt-md-0 ml-1">
                                 <a href="javascript:;" data-status-id="{{ $status->id }}"
                                    class="delete-project-status task_view_more d-flex align-items-center justify-content-center">

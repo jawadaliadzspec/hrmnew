@@ -56,6 +56,12 @@ class ProposalController extends AccountBaseController
         $this->viewLeadPermission = user()->permission('view_lead');
         abort_403(!in_array($this->addPermission, ['all', 'added']));
 
+        if (request('proposal') != '') {
+            $this->proposalId = request('proposal');
+            $this->type = 'proposal';
+            $this->proposal = Proposal::with('items', 'items.proposalItemImage', 'lead', 'unit', 'deal')->findOrFail($this->proposalId);
+        }
+
         $this->taxes = Tax::all();
 
         if (request('deal_id') != '') {
@@ -81,7 +87,11 @@ class ProposalController extends AccountBaseController
             }
 
             if (count($this->leadContacts) > 0) {
-                $this->deals = Deal::allLeads($this->leadContacts[0]->id);
+                if (request('proposal') != '') {
+                    $this->deals = Deal::allLeads($this->proposal->deal->lead_id);
+                }else {
+                    $this->deals = Deal::allLeads($this->leadContacts[0]->id);
+                }
             }
             else {
                 $this->deals = Deal::allLeads();
@@ -98,8 +108,6 @@ class ProposalController extends AccountBaseController
         $this->template = ProposalTemplate::all();
         $this->proposalTemplate = request('template') ? ProposalTemplate::findOrFail(request('template')) : null;
         $this->proposalTemplateItem = request('template') ? ProposalTemplateItem::with('proposalTemplateItemImage')->where('proposal_template_id', request('template'))->get() : null;
-
-
 
         $this->view = 'proposals.ajax.create';
 
@@ -499,7 +507,7 @@ class ProposalController extends AccountBaseController
         $this->items->price = number_format((float)$this->items->price, 2, '.', '');
         $this->taxes = Tax::all();
         $this->units = UnitType::all();
-        $view = view('invoices.ajax.add_item', $this->data)->render();
+        $view = view('proposals.ajax.add_item', $this->data)->render();
 
         return Reply::dataOnly(['status' => 'success', 'view' => $view]);
     }

@@ -120,13 +120,24 @@ class ProjectTemplatesDataTable extends BaseDataTable
         $request = $this->request();
 
         $model = $model::with(['category', 'members'])
-            ->select('id', 'project_name', 'category_id');
+            ->select('id', 'project_name', 'category_id', 'sub_category_id', 'created_at');
 
         if ($request->searchText != '') {
             $model->where(function ($query) {
                 $query->where('project_templates.project_name', 'like', '%' . request('searchText') . '%');
             });
         }
+ 
+        if ($request->project_category_id != '' && $request->project_category_id != 'all' && $request->project_category_id != 0) {
+ 
+            $model->where('project_templates.category_id', $request->project_category_id);
+        }
+
+        // sub category filter
+        if ($request->sub_category_id != '' && $request->sub_category_id != 'all' && $request->sub_category_id != 0) {
+            $model->where('project_templates.sub_category_id', $request->sub_category_id);
+        }
+
 
         return $model;
     }

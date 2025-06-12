@@ -79,7 +79,6 @@ class SmtpSetting extends BaseModel
                 'success' => true,
                 'message' => __('messages.smtpSuccess')
             ];
-
         } catch (TransportException | \Exception $e) {
             $this->verified = 0;
             $this->save();
@@ -89,7 +88,6 @@ class SmtpSetting extends BaseModel
                 'message' => $e->getMessage()
             ];
         }
-
     }
 
     public function getSetSmtpMessageAttribute()
@@ -104,5 +102,4 @@ class SmtpSetting extends BaseModel
 
         return null;
     }
-
 }

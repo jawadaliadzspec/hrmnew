@@ -145,16 +145,17 @@ class TimelogController extends AccountBaseController
             $this->projects = $projects = Project::whereHas('members', function ($query) use ($assignId) {
                 $query->where('user_id', $assignId);
             })
+                ->where('status', '!=', 'finished')
                 ->orWhere('projects.public', 1)
                 ->orderBy('project_name', 'asc')->get();
         }
         elseif (request()->has('default_project') && request('default_project') != '') {
             $defaultProject = request('default_project');
-            $this->projects = $projects = Project::where('id', $defaultProject)
+            $this->projects = $projects = Project::where('id', $defaultProject)->where('status', '!=', 'finished')
                 ->get();
         }
         else {
-            $this->projects = Project::allProjects();
+            $this->projects = Project::allProjects(true);
         }
 
         $this->tasks = Task::timelogTasks(request('default_project'));
@@ -179,11 +180,16 @@ class TimelogController extends AccountBaseController
 
     public function store(StoreTimeLog $request)
     {
+        
         $startDateTime = Carbon::createFromFormat($this->company->date_format, $request->start_date, $this->company->timezone)->format('Y-m-d') . ' ' . Carbon::createFromFormat($this->company->time_format, $request->start_time)->format('H:i:s');
         $startDateTime = Carbon::parse($startDateTime, $this->company->timezone)->setTimezone('UTC');
 
         $endDateTime = Carbon::createFromFormat($this->company->date_format, $request->end_date, $this->company->timezone)->format('Y-m-d') . ' ' . Carbon::createFromFormat($this->company->time_format, $request->end_time)->format('H:i:s');
         $endDateTime = Carbon::parse($endDateTime, $this->company->timezone)->setTimezone('UTC');
+
+        if(($endDateTime->diffInMinutes($startDateTime)) < 1){
+            return Reply::error(__('messages.enterAtLeastOneHour'));
+        }
 
         $timeLog = new ProjectTimeLog();
 
@@ -199,8 +205,8 @@ class TimelogController extends AccountBaseController
             ->where(function ($query) use ($startDateTime, $endDateTime) {
                 $query->where(
                     function ($q1) use ($startDateTime, $endDateTime) {
-                        $q1->where('start_time', '<=', $endDateTime->format('Y-m-d H:i:s'))
-                            ->where('end_time', '>=', $startDateTime->format('Y-m-d H:i:s'));
+                        $q1->where('start_time', '<', $endDateTime->format('Y-m-d H:i:s'))
+                            ->where('end_time', '>', $startDateTime->format('Y-m-d H:i:s'));
                     }
                 )
                     ->orWhere(
@@ -309,6 +315,10 @@ class TimelogController extends AccountBaseController
         $endDateTime = Carbon::parse($endDateTime, $this->company->timezone)->setTimezone('UTC');
 
 
+        if(($endDateTime->diffInMinutes($startDateTime)) < 1){
+            return Reply::error(__('messages.enterAtLeastOneHour'));
+        }
+        
         if ($request->has('project_id')) {
             $timeLog->project_id = $request->project_id;
         }
@@ -328,8 +338,8 @@ class TimelogController extends AccountBaseController
                     function ($q1) use ($startDateTime, $endDateTime) {
                         // $q1->where('start_time', '>=', $startDateTime->format('Y-m-d H:i:s'));
                         // $q1->where('end_time', '<=', $endDateTime->format('Y-m-d H:i:s'));
-                        $q1->where('start_time', '<=', $endDateTime->format('Y-m-d H:i:s'))
-                            ->where('end_time', '>=', $startDateTime->format('Y-m-d H:i:s'));
+                        $q1->where('start_time', '<', $endDateTime->format('Y-m-d H:i:s'))
+                            ->where('end_time', '>', $startDateTime->format('Y-m-d H:i:s'));
                     }
                 )
                     ->orWhere(

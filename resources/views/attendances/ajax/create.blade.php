@@ -59,16 +59,6 @@
                 <div class="row px-4 pb-4">
 
                     <div class="col-lg-3 col-md-6">
-                        <x-forms.select fieldId="location" :fieldLabel="__('app.location')" fieldName="location"
-                        search="true">
-                            @foreach ($location as $locations)
-                                <option @if ($locations->is_default == 1) selected @endif value="{{ $locations->id }}">
-                                    {{ $locations->location }}</option>
-                            @endforeach
-                        </x-forms.select>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
                         <div class="form-group my-3">
                             <x-forms.label fieldId="mark_attendance_by_month" :fieldLabel="__('modules.attendance.markAttendance'). ' ' . __('app.by')">
                             </x-forms.label>
@@ -118,6 +108,33 @@
                         </div>
                     </div>
 
+                    <div class="col-lg-3 col-md-6">
+                        <x-forms.select fieldId="location" :fieldLabel="__('app.location')" fieldName="location"
+                        search="true">
+                            @foreach ($location as $locations)
+                                <option @if ($locations->is_default == 1) selected @endif value="{{ $locations->id }}">
+                                    {{ $locations->location }}</option>
+                            @endforeach
+                        </x-forms.select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-3">
+                        <x-forms.select fieldId="work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="work_from_type" fieldRequired="true"
+                            search="true" >
+                                <option value="office">@lang('modules.attendance.office')</option>
+                                <option value="home">@lang('modules.attendance.home')</option>
+                                <option value="other">@lang('modules.attendance.other')</option>
+                        </x-forms.select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6" id="other_place" style="display:none">
+                        <x-forms.text fieldId="working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="working_from" fieldRequired="true" >
+                        </x-forms.text>
+                    </div>
+
+                </div>
+
+                <div class="row px-4">
                     <div class="col-lg-4 col-md-6 col-xl-3">
                         <div class="bootstrap-timepicker timepicker">
                             <x-forms.text :fieldLabel="__('modules.attendance.clock_out')"
@@ -126,6 +143,33 @@
                                 :fieldValue="\Carbon\Carbon::createFromFormat('H:i:s', attendance_setting()->shift->office_end_time)->format(company()->time_format)" />
                         </div>
                     </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <x-forms.select fieldId="clock_out_time_location_id" :fieldLabel="__('app.location')" fieldName="clock_out_time_location_id"
+                        search="true">
+                            @foreach ($location as $locations)
+                                <option @if ($locations->is_default == 1) selected @endif value="{{ $locations->id }}">
+                                    {{ $locations->location }}</option>
+                            @endforeach
+                        </x-forms.select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-3">
+                        <x-forms.select fieldId="clock_out_time_work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="clock_out_time_work_from_type" fieldRequired="true"
+                            search="true" >
+                                <option value="office">@lang('modules.attendance.office')</option>
+                                <option value="home">@lang('modules.attendance.home')</option>
+                                <option value="other">@lang('modules.attendance.other')</option>
+                        </x-forms.select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6" id="clock_out_other_place" style="display:none">
+                        <x-forms.text fieldId="clock_out_time_working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="clock_out_time_working_from" fieldRequired="true" >
+                        </x-forms.text>
+                    </div>
+                </div>
+
+                <div class="row px-4">
 
                     <div class="col-lg-4 col-md-6 col-xl-3">
                         <div class="form-group my-3">
@@ -173,20 +217,7 @@
                 </div>
 
                 <div class="row p-20">
-                    <div class="col-lg-3 col-md-3">
-                        <x-forms.select fieldId="work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="work_from_type" fieldRequired="true"
-                            search="true" >
-                                <option value="office">@lang('modules.attendance.office')</option>
-                                <option value="home">@lang('modules.attendance.home')</option>
-                                <option value="other">@lang('modules.attendance.other')</option>
-                        </x-forms.select>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6" id="other_place" style="display:none">
-                        <x-forms.text fieldId="working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="working_from" fieldRequired="true" >
-                        </x-forms.text>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mt-5">
+                    <div class="col-lg-4 col-md-6">
                         <x-forms.checkbox class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="__('app.overwriteAttendance')"
                                           fieldName="overwrite_attendance" fieldId="overwrite_attendance" fieldValue="yes"
                                           fieldRequired="true" :popover="__('messages.overwriteAttendanceTooltip')"/>
@@ -252,6 +283,10 @@
         });
         $('#work_from_type').change(function(){
             ($(this).val() == 'other') ? $('#other_place').show() : $('#other_place').hide();
+        });
+
+        $('#clock_out_time_work_from_type').change(function(){
+            ($(this).val() == 'other') ? $('#clock_out_other_place').show() : $('#clock_out_other_place').hide();
         });
 
         $('#start_time, #end_time').timepicker({

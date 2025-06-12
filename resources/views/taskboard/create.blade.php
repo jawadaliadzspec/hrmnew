@@ -21,10 +21,10 @@
                     search="true">
                     @foreach ($allBoardColumns as $column)
                         @if ($column->priority == $firstPriority)
-                            <option value="{{$column->priority}}" priority-type="before">Before {{$column->column_name}}</option>
-                            <option value="{{$column->priority}}" >After {{$column->column_name}}</option>
+                            <option value="{{$column->priority}}" priority-type="before">@lang('app.before') {{ $column->column_name}}</option>
+                            <option value="{{$column->priority}}" >@lang('app.after') {{ $column->column_name }}</option>
                         @else
-                            <option value="{{$column->priority}}" >After {{$column->column_name}}</option>
+                            <option value="{{$column->priority}}" >@lang('app.after') {{ $column->column_name }}</option>
                         @endif
                     @endforeach
                 </x-forms.select>

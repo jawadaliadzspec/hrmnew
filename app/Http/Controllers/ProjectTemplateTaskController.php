@@ -83,6 +83,7 @@ class ProjectTemplateTaskController extends AccountBaseController
         }
 
         $task->project_template_id = $request->template_id;
+        $task->milestone_id = $request->milestone_id;
         $task->project_template_task_category_id = $request->category_id;
         $task->priority = $request->priority;
 
@@ -189,7 +190,8 @@ class ProjectTemplateTaskController extends AccountBaseController
         if ($request->description != '') {
             $task->description = trim_editor($request->description);
         }
-
+        
+        $task->milestone_id = $request->milestone_id;
         $task->project_template_task_category_id = $request->category_id;
         $task->priority = $request->priority;
 

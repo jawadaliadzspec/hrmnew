@@ -94,7 +94,7 @@ class CustomField extends BaseModel
             $datatables->addColumn($customField->name, function ($row) use ($fieldData, $customField, $relation) {
 
                 $finalData = $fieldData->filter(function ($value) use ($customField, $row, $relation) {
-                    return ($value->custom_field_id == $customField->id) && ($value->model_id == ($relation ? $row->{$relation}->id : $row->id));
+                    return ($value->custom_field_id == $customField->id) && ($value->model_id == ($relation ? $row?->{$relation}?->id : $row->id));
                 })->first();
 
                 if ($customField->type == 'select') {

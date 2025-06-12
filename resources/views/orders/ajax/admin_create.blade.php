@@ -309,7 +309,7 @@ $addProductPermission = user()->permission('add_product');
             <textarea class="form-control" name="note" id="note" rows="4"></textarea>
         </div>
 
-        
+
     </div>
     <x-forms.custom-field :fields="$fields" class="col-md-12"></x-forms.custom-field>
     <!-- NOTE AND TERMS AND CONDITIONS END -->
@@ -474,6 +474,26 @@ $addProductPermission = user()->permission('add_product');
         }
 
         function addProduct(id) {
+
+            var existingRow = $(`input[name="product_id[]"][value="${id}"]`).closest('.item-row');
+
+            if (existingRow.length) {
+                // Increase quantity
+                let qtyInput = existingRow.find('input.quantity');
+                let currentQty = parseFloat(qtyInput.val());
+                qtyInput.val(currentQty + 1).trigger('change'); // Trigger change to recalculate amount
+
+                let cost = existingRow.find('input.cost_per_item');
+                let amountHtml = existingRow.find('span.amount-html');
+                let amount = existingRow.find('input.amount');
+                let newAmount = (qtyInput.val() * cost.val());
+                amountHtml.html(newAmount).trigger('change');
+                amount.val(newAmount).trigger('change');
+
+                calculateTotal();
+
+                return; // Exit the function
+            }
 
             $.easyAjax({
                 url: "{{ route('orders.add_item') }}",

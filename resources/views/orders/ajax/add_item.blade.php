@@ -117,11 +117,14 @@
                 messages: dropifyMessages
             });
 
-            var quantity = $('#sortable').find('.quantity[data-item-id="{{ $item->id }}"]').val();
-            var perItemCost = $('#sortable').find('.cost_per_item[data-item-id="{{ $item->id }}"]').val();
-            var amount = (quantity * perItemCost);
-            $('#sortable').find('.amount[data-item-id="{{ $item->id }}"]').val(amount);
-            $('#sortable').find('.amount-html[data-item-id="{{ $item->id }}"]').html(amount);
+            for(i=0;i<$('.quantity').length;i++)
+            {
+                var quantity = $('.quantity').eq(i).val();
+                var perItemCost = $('.cost_per_item').eq(i).val();
+                var amount = (quantity * perItemCost);
+                $('.amount').eq(i).val(amount);
+                $('.amount-html').eq(i).html(amount);
+            }
 
             calculateTotal();
         });

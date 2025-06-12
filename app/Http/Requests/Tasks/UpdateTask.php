@@ -7,6 +7,7 @@ use App\Models\Task;
 use App\Models\Project;
 use App\Models\ProjectMilestone;
 use App\Http\Requests\CoreRequest;
+use App\Models\TaskSetting;
 use App\Traits\CustomFieldsRequestTrait;
 
 class UpdateTask extends CoreRequest
@@ -45,6 +46,7 @@ class UpdateTask extends CoreRequest
 
 
         $setting = company();
+        $taskSetting = TaskSetting::first();
         $unassignedPermission = user()->permission('create_unassigned_tasks');
 
         $user = user();
@@ -54,7 +56,7 @@ class UpdateTask extends CoreRequest
             'priority' => 'required'
         ];
 
-        if(in_array('client', user_roles()))
+        if(in_array('client', user_roles()) || $taskSetting->project_required == 'yes')
         {
             $rules['project_id'] = 'required';
         }

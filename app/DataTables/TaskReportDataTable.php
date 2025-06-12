@@ -152,7 +152,7 @@ class TaskReportDataTable extends BaseDataTable
         $model->leftJoin('users as creator_user', 'creator_user.id', '=', 'tasks.created_by')
             ->leftJoin('task_labels', 'task_labels.task_id', '=', 'tasks.id')
             ->selectRaw('tasks.id, tasks.added_by, projects.project_name, projects.client_id, tasks.heading, client.name as clientName, creator_user.name as created_by, creator_user.image as created_image, tasks.board_column_id,tasks.task_short_code,
-             tasks.due_date, taskboard_columns.column_name as board_column, taskboard_columns.label_color,
+             tasks.due_date, taskboard_columns.column_name as board_column, taskboard_columns.slug as board_column_slug, taskboard_columns.label_color,
               tasks.project_id, tasks.is_private ,( select count("id") from pinned where pinned.task_id = tasks.id and pinned.user_id = ' . user()->id . ') as pinned_task')
             ->addSelect('tasks.company_id') // Company_id is fetched so the we have fetch company relation with it)
             ->whereNull('projects.deleted_at')

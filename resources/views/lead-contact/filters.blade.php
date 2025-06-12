@@ -109,51 +109,48 @@
 
 @push('scripts')
     <script>
-        $('#type, #followUp, #agent_id, #filter_source_id, #filter_owner_id, #filter_status_id, #date_filter_on, #min, #max, #filter_addedBy')
-            .on('change keyup', function() {
-                if ($('#type').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#min').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#max').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#filter_source_id').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#filter_owner_id').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#date_filter_on').val() != "created_at") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else if ($('#filter_addedBy').val() != "all") {
-                    $('#reset-filters').removeClass('d-none');
-                    showTable();
-                } else {
-                    $('#reset-filters').addClass('d-none');
-                    showTable();
-                }
-            });
+        const filterSelectors = '#type, #followUp, #agent_id, #filter_source_id, #filter_owner_id, #filter_status_id, #date_filter_on, #min, #max, #filter_addedBy';
+
+        function updateFiltersVisibility() {
+            const filterValues = {
+                'type': $('#type').val(),
+                'min': $('#min').val(),
+                'max': $('#max').val(),
+                'filter_source_id': $('#filter_source_id').val(),
+                'filter_owner_id': $('#filter_owner_id').val(),
+                'date_filter_on': $('#date_filter_on').val(),
+                'filter_addedBy': $('#filter_addedBy').val()
+            };
+
+            const hasActiveFilter = filterValues.type !== "all" ||
+                                   filterValues.min !== "all" ||
+                                   filterValues.max !== "all" ||
+                                   filterValues.filter_source_id !== "all" ||
+                                   filterValues.filter_owner_id !== "all" ||
+                                   filterValues.date_filter_on !== "created_at" ||
+                                   filterValues.filter_addedBy !== "all";
+
+            $('#reset-filters').toggleClass('d-none', !hasActiveFilter);
+            showTable();
+        }
+
+        $(filterSelectors).on('change keyup', updateFiltersVisibility);
 
         $('#search-text-field').on('keyup', function() {
-            if ($('#search-text-field').val() != "") {
-                $('#reset-filters').removeClass('d-none');
+            const hasSearchText = $(this).val() !== "";
+            $('#reset-filters').toggleClass('d-none', !hasSearchText);
+            if (hasSearchText) {
                 showTable();
             }
         });
 
-        $('#reset-filters,#reset-filters-2').click(function() {
+        $('#reset-filters, #reset-filters-2').click(function() {
             $('#filter-form')[0].reset();
-
             $('.filter-box #status').val('not finished');
             $('.filter-box #date_filter_on').val('created_at');
             $('.filter-box .select-picker').selectpicker("refresh");
             $('#reset-filters').addClass('d-none');
             showTable();
         });
-
     </script>
 @endpush

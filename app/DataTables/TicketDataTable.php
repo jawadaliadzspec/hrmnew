@@ -39,6 +39,28 @@ class   TicketDataTable extends BaseDataTable
         $datatables->addIndexColumn();
         $datatables->addColumn('action', function ($row) {
 
+            $userid = UserService::getUserId();
+            $isView = false;
+            $ticketSetting = TicketSettingForAgents::first();
+            if($ticketSetting?->ticket_scope == 'group_tickets'){
+
+                $userGroupIds = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+                    $query->where('agent_id', $userid);
+                })->pluck('id')->toArray();
+
+                $ticketSettingGroupIds = is_array($ticketSetting?->group_id) ? $ticketSetting?->group_id : explode(',', $ticketSetting?->group_id);
+                $commonGroupIds = array_intersect($userGroupIds, $ticketSettingGroupIds);
+
+                if($commonGroupIds && in_array($row->group_id, $commonGroupIds)){
+                    $isView = true;
+                }
+
+            }elseif($ticketSetting?->ticket_scope == 'assigned_tickets'){
+                $isView = true;
+            }elseif($ticketSetting?->ticket_scope == 'all_tickets'){
+                $isView = true;
+            }
+
             $action = '<div class="task_view">';
 
             $action .= '<div class="dropdown">
@@ -48,7 +70,7 @@ class   TicketDataTable extends BaseDataTable
                     </a>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink-' . $row->ticket_number . '" tabindex="0">';
 
-            if ($row->canViewTicket() || $row->agent_id == null) {
+            if ($row->canViewTicket() || $row->agent_id == null || $isView) {
                 $action .= '<a href="' . route('tickets.show', [$row->ticket_number]) . '" class="dropdown-item"><i class="fa fa-eye mr-2"></i>' . __('app.view') . '</a>';
             }
 
@@ -78,7 +100,30 @@ class   TicketDataTable extends BaseDataTable
         });
 
         $datatables->addColumn('status', function ($row) {
-            if ($row->canEditTicket($row)) {
+
+            $userid = UserService::getUserId();
+            $isEdit = false;
+            $ticketSetting = TicketSettingForAgents::first();
+            if($ticketSetting?->ticket_scope == 'group_tickets'){
+
+                $userGroupIds = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+                    $query->where('agent_id', $userid);
+                })->pluck('id')->toArray();
+
+                $ticketSettingGroupIds = is_array($ticketSetting?->group_id) ? $ticketSetting?->group_id : explode(',', $ticketSetting?->group_id);
+                $commonGroupIds = array_intersect($userGroupIds, $ticketSettingGroupIds);
+
+                if($commonGroupIds && in_array($row->group_id, $commonGroupIds)){
+                    $isEdit = true;
+                }
+
+            }elseif($ticketSetting?->ticket_scope == 'assigned_tickets'){
+                $isEdit = true;
+            }elseif($ticketSetting?->ticket_scope == 'all_tickets'){
+                $isEdit = true;
+            }
+
+            if ($row->canEditTicket($row) || $isEdit) {
 
                 $status = '<select class="form-control select-picker change-status" data-ticket-id="' . $row->id . '">';
                 $status .= '<option ';

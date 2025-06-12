@@ -952,6 +952,10 @@ trait EmployeeDashboard
 
     public function updateClockIn(Request $request)
     {
+        $request->validate([
+            'clockOutWorkFrom' => 'required_if:clockOutWorkFromType,other'
+        ]);
+
         $now = now($this->company->timezone);
         $attendance = Attendance::findOrFail($request->id);
 
@@ -967,6 +971,11 @@ trait EmployeeDashboard
 
         $attendance->clock_out_time = $now->copy()->timezone(config('app.timezone'));
         $attendance->clock_out_ip = request()->ip();
+
+        $attendance->clock_out_time_location_id = $request->clockOutLocation;
+        $attendance->clock_out_time_work_from_type = $request->clockOutWorkFromType;
+        $attendance->clock_out_time_working_from = $request->clockOutWorkFrom;
+
         $attendance->save();
 
 
@@ -1075,7 +1084,7 @@ trait EmployeeDashboard
 
         $nowTime = Carbon::createFromFormat('Y-m-d H:i:s', now($this->company->timezone)->toDateTimeString(), 'UTC');
 
-        if ($checkPreviousDayShift && now($this->company->timezone)->betweenIncluded($checkPreviousDayShift->shift_start_time, $checkPreviousDayShift->shift_end_time)) {
+        if ($checkPreviousDayShift && $nowTime->betweenIncluded($checkPreviousDayShift->shift_start_time, $checkPreviousDayShift->shift_end_time)) {
             $attendanceSettings = $checkPreviousDayShift;
 
         }
@@ -1186,6 +1195,7 @@ trait EmployeeDashboard
         $this->totalTimeFormatted = CarbonInterval::formatHuman($this->totalTime, true);
 
         $this->attendance = $attendance;
+        $this->location = CompanyAddress::all();
 
         return view('dashboard.employee.show_clocked_hours', $this->data);
     }

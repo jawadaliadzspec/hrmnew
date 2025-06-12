@@ -19,6 +19,7 @@ use App\DataTables\TicketDataTable;
 use App\Models\TicketReplyTemplate;
 use App\Http\Requests\Tickets\StoreTicket;
 use App\Http\Requests\Tickets\UpdateTicket;
+use App\Http\Requests\Tickets\UpdateTicketDetailRequest;
 use App\Models\Project;
 use App\Scopes\ActiveScope;
 use App\Models\ClientContact;
@@ -175,6 +176,7 @@ class TicketController extends AccountBaseController
         $reply->ticket_id = $ticket->id;
         $reply->user_id = $id; // Current logged in user
         $reply->added_by = user()->id;
+        $reply->is_description = true;
         $reply->save();
 
         // To add custom fields data
@@ -211,7 +213,41 @@ class TicketController extends AccountBaseController
             ->where('ticket_number', $ticketNumber)
             ->firstOrFail();
 
-        abort_403(!$this->ticket->canViewTicket());
+        $userid = UserService::getUserId();
+        $userAssignedInGroup = false;
+        $this->isEditable = false;
+        $userAssignedInGroup = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+            $query->where('agent_id', $userid)->orWhereNull('agent_id');
+        })->exists();
+
+        if($userAssignedInGroup == false){
+
+            abort_403(!$this->ticket->canViewTicket());
+        }else{
+
+            $ticketSetting = TicketSettingForAgents::first();
+            if($ticketSetting?->ticket_scope == 'group_tickets'){
+
+                $userGroupIds = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+                    $query->where('agent_id', $userid);
+                })->pluck('id')->toArray();
+
+                $ticketSettingGroupIds = is_array($ticketSetting?->group_id) ? $ticketSetting?->group_id : explode(',', $ticketSetting?->group_id);
+                $commonGroupIds = array_intersect($userGroupIds, $ticketSettingGroupIds);
+
+                if($commonGroupIds && !in_array($this->ticket->group_id, $commonGroupIds)){
+
+                    abort_403(!$this->ticket->canViewTicket());
+                }else{
+                    $this->isEditable = true;
+                }
+            }elseif($ticketSetting?->ticket_scope == 'assigned_tickets'){
+                $this->isEditable = true;
+                abort_403(!$this->ticket->canViewTicket());
+            }elseif($ticketSetting?->ticket_scope == 'all_tickets'){
+                $this->isEditable = true;
+            }
+        };
 
         $this->ticket = $this->ticket->withCustomFields();
         $this->pageTitle = __('app.menu.ticket') . '#' . $this->ticket->ticket_number;
@@ -334,6 +370,33 @@ class TicketController extends AccountBaseController
 
         return Reply::success(__('messages.deleteSuccess'));
 
+    }
+
+    public function editDetail($id)
+    {
+        $this->ticket = Ticket::findOrFail($id);
+        $this->reply = TicketReply::where('ticket_id', $id)->where('is_description', 1)->first();
+
+        return view('tickets.ajax.edit-ticket-detail', $this->data);
+    }
+
+    public function updateDetail(UpdateTicketDetailRequest $request, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+        $ticket->subject = $request->subject;
+        $ticket->save();
+        $description = trim(strip_tags($request->description));
+
+        if ($description && $request->ticket_reply_id) {
+            $ticketReply = TicketReply::findOrFail($request->ticket_reply_id);
+            $ticketReply->message = trim_editor($request->description);
+            $ticketReply->save();
+        }elseif ($description == '' && $request->ticket_reply_id != null) {
+
+            return Reply::error(__('messages.descriptionFieldRequired'));
+        }
+
+        return Reply::success(__('messages.updateSuccess'));
     }
 
     public function updateOtherData(Request $request, $id)
@@ -588,7 +651,41 @@ class TicketController extends AccountBaseController
     {
         $ticket = Ticket::findOrFail($request->ticketId);
 
-        abort_403(!$ticket->canEditTicket());
+        $userid = UserService::getUserId();
+        $userAssignedInGroup = false;
+        $this->isEditable = false;
+        $userAssignedInGroup = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+            $query->where('agent_id', $userid)->orWhereNull('agent_id');
+        })->exists();
+
+        if($userAssignedInGroup == false){
+
+            abort_403(!$ticket->canEditTicket());
+        }else{
+
+            $ticketSetting = TicketSettingForAgents::first();
+            if($ticketSetting?->ticket_scope == 'group_tickets'){
+
+                $userGroupIds = TicketGroup::whereHas('enabledAgents', function ($query) use ($userid) {
+                    $query->where('agent_id', $userid);
+                })->pluck('id')->toArray();
+
+                $ticketSettingGroupIds = is_array($ticketSetting?->group_id) ? $ticketSetting?->group_id : explode(',', $ticketSetting?->group_id);
+                $commonGroupIds = array_intersect($userGroupIds, $ticketSettingGroupIds);
+
+                if($commonGroupIds && !in_array($ticket->group_id, $commonGroupIds)){
+
+                    abort_403(!$ticket->canEditTicket());
+                }else{
+                    $this->isEditable = true;
+                }
+            }elseif($ticketSetting?->ticket_scope == 'assigned_tickets'){
+                $this->isEditable = true;
+                abort_403(!$ticket->canEditTicket());
+            }elseif($ticketSetting?->ticket_scope == 'all_tickets'){
+                $this->isEditable = true;
+            }
+        };
 
         $ticket->update(['status' => $request->status]);
 

@@ -6,6 +6,7 @@ use App\DataTables\ArchiveProjectsDataTable;
 use App\DataTables\ArchiveTasksDataTable;
 use App\DataTables\DiscussionDataTable;
 use App\DataTables\ExpensesDataTable;
+use App\DataTables\EstimatesDataTable;
 use App\DataTables\InvoicesDataTable;
 use App\DataTables\OrdersDataTable;
 use App\DataTables\PaymentsDataTable;
@@ -429,11 +430,34 @@ class ProjectController extends AccountBaseController
             if ($request->template_id) {
                 $template = ProjectTemplate::with('projectMembers')->findOrFail($request->template_id);
                 $counter = 1;
+
+                $milestoneArray = [];
+
+                foreach ($template->milestones as $milestone) {
+                    
+                    $projectMilestone = new ProjectMilestone();
+                    $projectMilestone->project_id = $project->id;
+                    $projectMilestone->milestone_title = $milestone->milestone_title;
+                    $projectMilestone->summary = $milestone->summary;
+                    $projectMilestone->cost = $milestone->cost;
+                    $projectMilestone->currency_id = $milestone->currency_id;
+                    $projectMilestone->status = $milestone->status;
+                    $projectMilestone->add_to_budget = 'no';
+                    $projectMilestone->start_date = $milestone->start_date;
+                    $projectMilestone->end_date = $milestone->end_date;
+                    $projectMilestone->save();
+
+                    $milestoneArray[$milestone->id] = $projectMilestone->id;
+                    
+                }
+
+
                 foreach ($template->tasks as $task) {
 
                     $projectTask = new Task();
                     $projectTask->project_id = $project->id;
                     $projectTask->heading = $task->heading;
+                    $projectTask->milestone_id = $milestoneArray[$task->milestone_id] ?? null;
                     $projectTask->task_category_id = $task->project_template_task_category_id;
                     $projectTask->description = trim_editor($task->description);
                     $projectTask->start_date = $startDate;
@@ -506,7 +530,7 @@ class ProjectController extends AccountBaseController
         } catch (\Exception $e) {
             // Rollback Transaction
             DB::rollback();
-
+        
             return Reply::error('Some error occurred when inserting the data. Please try again or contact support ' . $e->getMessage());
         }
     }
@@ -659,7 +683,7 @@ class ProjectController extends AccountBaseController
             }else if($project->completion_percent < 100 && $request->status == 'finished'){
                 $project->status = 'in progress';
             }else{
-                $project->status = $request->status;    
+                $project->status = $request->status;
             }
         }
         else {
@@ -820,6 +844,8 @@ class ProjectController extends AccountBaseController
             break;
         case 'invoices':
             return $this->invoices();
+        case 'estimates':
+            return $this->estimates($this->project->id, $this->project->client_id);
         case 'files':
             $this->view = 'projects.ajax.files';
             break;
@@ -1126,6 +1152,24 @@ class ProjectController extends AccountBaseController
         }
 
         return response()->json($data);
+    }
+
+    public function estimates($projectId, $clientId)
+    {
+        $dataTable = new EstimatesDataTable(
+            $projectId,
+            $clientId
+        );
+        
+        $viewPermission = user()->permission('view_project_estimates');
+
+        abort_403(!in_array($viewPermission, ['all', 'added', 'owned']));
+
+        $tab = request('tab');
+        $this->activeTab = $tab ?: 'overview';
+        $this->view = 'projects.ajax.estimates';
+
+        return $dataTable->render('projects.show', $this->data);
     }
 
     public function invoices()

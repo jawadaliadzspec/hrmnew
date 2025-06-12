@@ -86,6 +86,8 @@
                         @lang('modules.timeLogs.approveTimesheet')
                         <span class="badge badge-warning ml-1">{{ $pendingApproval }}</span>
                     </x-forms.link-secondary>
+
+                    
                 @endif
             </div>
 

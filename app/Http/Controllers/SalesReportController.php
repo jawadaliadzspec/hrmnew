@@ -24,6 +24,8 @@ class SalesReportController extends AccountBaseController
 
     public function index(SalesReportDataTable $dataTable) /** @phpstan-ignore-line */
     {
+        abort_403(user()->permission('view_sales_report') != 'all');
+
         if (!request()->ajax()) {
             $this->fromDate = now($this->company->timezone)->startOfMonth();
             $this->toDate = now($this->company->timezone);

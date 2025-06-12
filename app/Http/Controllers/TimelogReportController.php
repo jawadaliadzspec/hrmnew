@@ -29,6 +29,8 @@ class TimelogReportController extends AccountBaseController
 
     public function index(TimeLogReportDataTable $dataTable)
     {
+        abort_403(user()->permission('view_time_log_report') != 'all');
+
         if (!request()->ajax()) {
             $this->fromDate = now($this->company->timezone)->startOfMonth();
             $this->toDate = now($this->company->timezone);
@@ -158,6 +160,7 @@ class TimelogReportController extends AccountBaseController
 
     public function consolidateIndex(TimeLogConsolidatedReportDataTable $dataTable)
     {
+        abort_403(user()->permission('view_time_log_report') != 'all');
         $this->pageTitle = 'app.timelogConsolidatedReport';
 
         if (!request()->ajax()) {
@@ -235,6 +238,7 @@ class TimelogReportController extends AccountBaseController
 
     public function projectWiseTimelog(TimeLogProjectwiseReportDataTable $dataTable)
     {
+        abort_403(user()->permission('view_time_log_report') != 'all');
         $this->pageTitle = 'app.projectWiseTimeLogReport';
 
         if (!request()->ajax()) {

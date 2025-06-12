@@ -46,28 +46,6 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                 </div>
 
                 <div class="row">
-
-                    <div class="col-lg-4 col-md-6">
-                        <div class="bootstrap-timepicker timepicker">
-                            <x-forms.text :fieldLabel="__('modules.attendance.clock_out')"
-                                :fieldPlaceholder="__('placeholders.hours')" fieldName="clock_out_time"
-                                fieldId="clock-out" />
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-4">
-                        <x-forms.text :fieldLabel="__('modules.attendance.clock_out_ip')"
-                            :fieldPlaceholder="__('placeholders.hours')" fieldName="clock_out_ip"
-                            fieldId='clock_out_ip' :fieldValue="request()->ip()" />
-                    </div>
-
-                    <div class="col-lg-2 col-md-6">
-                        <x-forms.toggle-switch class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="__('modules.attendance.halfDay')" fieldName="halfday"
-                            fieldId="halfday" />
-                    </div>
-                </div>
-
-                <div class="row">
                     <div class="col-lg-6 col-md-6 col-xl-4" id="half_day_section" style="display: none;">
                         <div class="form-group my-3">
                             <x-forms.label fieldId="duration" :fieldLabel="__('modules.leaves.selectDuration')">
@@ -98,9 +76,9 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                     <div class="col-lg-4 col-md-6">
                         <x-forms.select fieldId="work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="work_from_type" fieldRequired="true"
                         search="true" >
+                        <option @if ($attendance->work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
                         <option @if ($attendance->work_from_type == 'home') selected @endif value="home">@lang('modules.attendance.home')</option>
                         <option @if ($attendance->work_from_type == 'other') selected @endif value="other">@lang('modules.attendance.other')</option>
-                        <option @if ($attendance->work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
                         </x-forms.select>
                     </div>
 
@@ -109,6 +87,56 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                 <div class="row">
                     <div class="col-lg-4 col-md-6"  id="otherPlace" @if ($attendance->work_from_type != 'other') style="display:none" @endif >
                         <x-forms.text fieldId="working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="working_from" fieldRequired="true" :fieldValue="$attendance->working_from">
+                        </x-forms.text>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="bootstrap-timepicker timepicker">
+                            <x-forms.text :fieldLabel="__('modules.attendance.clock_out')"
+                                :fieldPlaceholder="__('placeholders.hours')" fieldName="clock_out_time"
+                                fieldId="clock-out" />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-4">
+                        <x-forms.text :fieldLabel="__('modules.attendance.clock_out_ip')"
+                            :fieldPlaceholder="__('placeholders.hours')" fieldName="clock_out_ip"
+                            fieldId='clock_out_ip' :fieldValue="request()->ip()" />
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <x-forms.toggle-switch class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="__('modules.attendance.halfDay')" fieldName="halfday"
+                            fieldId="halfday" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <x-forms.select fieldId="clock_out_time_location_id" :fieldLabel="__('app.location')" fieldName="clock_out_time_location_id"
+                        search="true">
+                            @foreach ($location as $locations)
+                                <option value="{{ $locations->id }}">
+                                    {{ $locations->location }}</option>
+                            @endforeach
+                        </x-forms.select>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <x-forms.select fieldId="clock_out_time_work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="clock_out_time_work_from_type" fieldRequired="true"
+                        search="true" >
+                        <option @if ($attendance->clock_out_time_work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
+                        <option @if ($attendance->clock_out_time_work_from_type == 'home') selected @endif value="home">@lang('modules.attendance.home')</option>
+                        <option @if ($attendance->clock_out_time_work_from_type == 'other') selected @endif value="other">@lang('modules.attendance.other')</option>
+                        </x-forms.select>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 col-md-6"  id="clock_out_otherPlace" @if ($attendance->clock_out_time_work_from_type != 'other') style="display:none" @endif >
+                        <x-forms.text fieldId="clock_out_time_working_from" :popover="__('messages.clockOutOtherLocation')" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="clock_out_time_working_from" fieldRequired="true" :fieldValue="$attendance->clock_out_time_working_from">
                         </x-forms.text>
                     </div>
                 </div>
@@ -148,6 +176,10 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
             @endif
             minuteStep: 1
         });
+
+        let timeSelected = false;
+
+        // Initialize timepicker
         $('#clock-out').timepicker({
             @if(company()->time_format == 'H:i')
             showMeridian: false,
@@ -156,8 +188,8 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
             defaultTime: false
         });
 
-        $('#work_from_type').change(function(){
-            ($(this).val() == 'other') ? $('#otherPlace').show() : $('#otherPlace').hide();
+        $('#clock_out_time_work_from_type').change(function(){
+            ($(this).val() == 'other') ? $('#clock_out_otherPlace').show() : $('#clock_out_otherPlace').hide();
         });
 
         $('#save-attendance').click(function () {
@@ -182,5 +214,9 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
         });
     });
 
-
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('[data-toggle="popover"]').popover();
+        }, 500);
+    });
 </script>

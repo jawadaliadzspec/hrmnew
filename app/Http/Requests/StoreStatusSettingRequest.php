@@ -24,8 +24,10 @@ class StoreStatusSettingRequest extends FormRequest
      */
     public function rules()
     {
+        $id = $this->route('id');
+
         return [
-            'name' => 'required',
+            'name' => 'required|unique:project_status_settings,status_name,' . $id . ',id,company_id,' . company()->id,
             'status' => 'required'
         ];
     }

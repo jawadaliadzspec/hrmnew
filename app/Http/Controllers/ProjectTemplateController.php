@@ -6,7 +6,9 @@ use App\DataTables\ProjectTemplateTasksDataTable;
 use App\DataTables\ProjectTemplatesDataTable;
 use App\Helper\Reply;
 use App\Http\Requests\ProjectTemplate\StoreProject;
+use App\Models\Project;
 use App\Models\ProjectCategory;
+use App\Models\ProjectSubCategory;
 use App\Models\ProjectTemplate;
 use App\Models\TaskboardColumn;
 use App\Models\User;
@@ -37,7 +39,8 @@ class ProjectTemplateController extends AccountBaseController
         $this->viewProjectTemplatePermission = user()->permission('view_project_template');
 
         abort_403(!in_array($this->viewProjectTemplatePermission, ['all']) && !in_array($this->manageProjectTemplatePermission, ['all', 'added']));
-            return $dataTable->render('project-templates.index', $this->data);
+        $this->categories = ProjectCategory::all();
+        return $dataTable->render('project-templates.index', $this->data);
     }
 
     /**
@@ -90,6 +93,10 @@ class ProjectTemplateController extends AccountBaseController
             $project->category_id = $request->category_id;
         }
 
+        if ($request->sub_category_id != '') {
+            $project->sub_category_id = $request->sub_category_id;
+        }
+
         if ($request->client_view_task) {
             $project->client_view_task = 'enable';
         }
@@ -126,7 +133,7 @@ class ProjectTemplateController extends AccountBaseController
      */
     public function show($id)
     {
-        $this->template = ProjectTemplate::findOrFail($id);
+        $this->template = ProjectTemplate::with('milestones')->findOrFail($id);
         $this->manageProjectTemplatePermission = user()->permission('manage_project_template');
         $this->viewProjectTemplatePermission = user()->permission('view_project_template');
 
@@ -138,6 +145,11 @@ class ProjectTemplateController extends AccountBaseController
         case 'members':
             $this->view = 'project-templates.ajax.members';
                 break;
+        case 'milestones':
+
+            $this->project =  $this->template;
+            $this->view = 'project-templates.ajax.milestones';
+            break;
         case 'tasks':
             $this->taskBoardStatus = TaskboardColumn::all();
                 return $this->tasks();
@@ -187,8 +199,13 @@ class ProjectTemplateController extends AccountBaseController
 
         $this->pageTitle = __('app.update') . ' ' . __('app.project');
 
-        $this->categories = ProjectCategory::all();
+        $this->categoryData = collect();
 
+        if (!is_null($this->template->category_id)) {
+            $this->categoryData = ProjectSubCategory::where('category_id', $this->template->category_id)->get();
+        }
+        
+        $this->categories = ProjectCategory::all();
         $this->view = 'project-templates.ajax.edit';
 
         if (request()->ajax()) {
@@ -221,6 +238,13 @@ class ProjectTemplateController extends AccountBaseController
         if ($request->category_id != '') {
             $project->category_id = $request->category_id;
         }
+
+        if ($request->sub_category_id != '') {
+            $project->sub_category_id = $request->sub_category_id;
+        }else{
+            $project->sub_category_id = null;
+        }
+
 
         if ($request->client_view_task) {
             $project->client_view_task = 'enable';

@@ -118,12 +118,12 @@ return array(
     'paymentGateway' => array(
         'sandboxPaypalClientId' => 'e.g. AW-Ydt5KHz2FwhAikHsObpRrpB55qE8MyvUkHbQsFb_6_2Unv3WNBSmBxEqA8N74JzOaFTPBUI-MG4sB',
         'livePaypalClientId' => 'e.g. AW-Ydt5KHz2FwhAikHsObpRrpB55qE8MyvUkHbQsFb_6_2Unv3WNBSmBxEqA8N74JzOaFTPBUI-MG4sB',
-        'testStripePublishableKey' => 'e.g. XnjBe1d6G5reXbGAc8a1qumQN0doumYbhb2tChV6qTCuFfvQyxEDInYho7jhQoR4MqNBWcafRYPCb00r2jkEBKe',
-        'liveStripePublishableKey' => 'e.g. SLM4xBXnjBe1d6G5reXbGAc8a1qumQN0doumYbhb2tChV6qTCuFfvQyxEDInYho7jhQoR4MqNBWcafRYPCbXXXXXXXXX',
-        'testRazorpayKey' => 'e.g. 3XXEX',
-        'liveRazorpayKey' => 'e.g. XXXX',
-        'paystackKey' => 'e.g. XXXXXXXXXXXXXXXXXXXXXXX',
-        'flutterwaveKey' => 'e.g. xxxxxxxxxxxxxxxxxxx-X',
+        'testStripePublishableKey' => 'e.g. sk_test_XXXXXXXXXXxBXnjBe1d6G5reXbGAc8a1qumQN0doumYbhb2tChV6qTCuFfvQyxEDInYho7jhQoR4MqNBWcafRYPCb00r2jkEBKe',
+        'liveStripePublishableKey' => 'e.g. sk_live_51GbndSLM4xBXnjBe1d6G5reXbGAc8a1qumQN0doumYbhb2tChV6qTCuFfvQyxEDInYho7jhQoR4MqNBWcafRYPCbXXXXXXXXX',
+        'testRazorpayKey' => 'e.g. rzp_test_znKZOLXXT3XXEX',
+        'liveRazorpayKey' => 'e.g. rzp_live_znKZOLn4TXXXXX',
+        'paystackKey' => 'e.g. pk_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+        'flutterwaveKey' => 'e.g. FLWPUBK-xxxxxxxxxxxxxxxxxxxxx-X',
     ),
     'bankaccount' => array(
         'accountName' => 'e.g. John Doe',

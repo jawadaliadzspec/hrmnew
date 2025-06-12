@@ -21,8 +21,11 @@ class EstimatesDataTable extends BaseDataTable
     private $addInvoicePermission;
     private $viewEstimatePermission;
     private $showRequest;
+    private $viewProjectEstimatePermission;
+    private $projectID;
+    private $clientID;
 
-    public function __construct()
+    public function __construct($projectID = null,$clientID = null)
     {
         parent::__construct();
         $this->viewEstimatePermission = user()->permission('view_estimates');
@@ -30,7 +33,10 @@ class EstimatesDataTable extends BaseDataTable
         $this->editEstimatePermission = user()->permission('edit_estimates');
         $this->deleteEstimatePermission = user()->permission('delete_estimates');
         $this->addInvoicePermission = user()->permission('add_invoices');
+        $this->viewProjectEstimatePermission = user()->permission('view_project_estimates');
         $this->showRequest = in_array(user()->permission('view_estimate_request'), ['all', 'added', 'owned', 'both']);
+        $this->projectID = $projectID;
+        $this->clientID = $clientID;
     }
 
     /**
@@ -219,6 +225,11 @@ class EstimatesDataTable extends BaseDataTable
                 'estimate_requests.estimate_request_number',
             ]);
 
+        if ($this->projectID != null && $this->clientID != null) {
+            $model = $model->where('estimates.project_id', $this->projectID)
+                ->where('estimates.client_id', $this->clientID);
+        }
+
         if ($request->startDate !== null && $request->startDate != 'null' && $request->startDate != '') {
             $startDate = companyToDateString($request->startDate);
             $model = $model->where(DB::raw('DATE(estimates.`valid_till`)'), '>=', $startDate);
@@ -238,8 +249,9 @@ class EstimatesDataTable extends BaseDataTable
         }
 
         if (in_array('client', user_roles())) {
-            $model = $model->where('estimates.send_status', 1);
+
             $model = $model->where('estimates.client_id', $userId);
+            $model = $model->orWhere('estimates.send_status', 1);
         }
 
         if ($request->searchText != '') {
@@ -262,6 +274,11 @@ class EstimatesDataTable extends BaseDataTable
                         $query->where('estimates.status', 'like', '%' . request('searchText') . '%');
                     });
             });
+        }
+
+        if ($this->projectID != null && $this->clientID != null) {
+            $model = $model->where('estimates.project_id', $this->projectID)
+                ->where('estimates.client_id', $this->clientID);
         }
 
         if ($this->viewEstimatePermission == 'added') {

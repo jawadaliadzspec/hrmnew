@@ -642,15 +642,41 @@
             $('#add-shipping-field, #client_shipping_address').toggleClass('d-none');
         });
 
+        const resetAddProductButton = () => {
+            $("#add-products").val('').selectpicker("refresh");
+        };
+
         $('#add-products').on('changed.bs.select', function(e, clickedIndex, isSelected, previousValue) {
             e.stopImmediatePropagation()
             var id = $(this).val();
             if (previousValue != id && id != '') {
                 addProduct(id);
+                resetAddProductButton();
             }
         });
 
         function addProduct(id) {
+
+            var existingRow = $(`input[name="product_id[]"][value="${id}"]`).closest('.item-row');
+
+            if (existingRow.length) {
+                // Increase quantity
+                let qtyInput = existingRow.find('input.quantity');
+                let currentQty = parseFloat(qtyInput.val());
+                qtyInput.val(currentQty + 1).trigger('change'); // Trigger change to recalculate amount
+
+                let cost = existingRow.find('input.cost_per_item');
+                let amountHtml = existingRow.find('span.amount-html');
+                let amount = existingRow.find('input.amount');
+                let newAmount = (qtyInput.val() * cost.val());
+                amountHtml.html(newAmount).trigger('change');
+                amount.val(newAmount).trigger('change');
+
+                calculateTotal();
+
+                return; // Exit the function
+            }
+
             var currencyId = $('#currency_id').val();
 
             $.easyAjax({

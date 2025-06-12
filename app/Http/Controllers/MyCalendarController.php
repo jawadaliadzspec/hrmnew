@@ -97,10 +97,15 @@ class MyCalendarController extends AccountBaseController
                     // tasks
                     $completedTaskColumn = TaskboardColumn::completeColumn();
 
-                    $tasks = Task::with('boardColumn')
+                    $tasks = Task::with(['boardColumn', 'project.client'])
                         ->where('board_column_id', '<>', $completedTaskColumn->id)
-                        ->whereHas('users', function ($query) {
-                            $query->where('user_id', user()->id);
+                        ->where(function ($query) {
+                            $query->whereHas('users', function ($q) {
+                                $q->where('user_id', user()->id);
+                            });
+                            $query->orWhereHas('project.client', function ($q) {
+                                $q->where('id', user()->id);
+                            });
                         })
                         ->where(function ($q) use ($startDate, $endDate) {
                             $q->whereBetween(DB::raw('DATE(tasks.`due_date`)'), [$startDate->toDateString(), $endDate->toDateString()]);

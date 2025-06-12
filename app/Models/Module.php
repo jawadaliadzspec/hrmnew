@@ -467,6 +467,11 @@ class Module extends BaseModel
                 [
                     'allowed_permissions' => Permission::ALL_NONE,
                     'is_custom' => 1,
+                    'name' => 'view_project_estimates',
+                ],
+                [
+                    'allowed_permissions' => Permission::ALL_NONE,
+                    'is_custom' => 1,
                     'name' => 'view_project_burndown_chart',
                 ],
                 [

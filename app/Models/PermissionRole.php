@@ -177,6 +177,7 @@ class PermissionRole extends BaseModel
 
             'view_invoices' => PermissionType::OWNED,
             'view_project_invoices' => PermissionType::ALL,
+            'view_project_estimates' => PermissionType::ALL,
 
             'view_payments' => PermissionType::OWNED,
             'view_project_payments' => PermissionType::ALL,

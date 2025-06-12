@@ -2,6 +2,7 @@
 
 return array(
     'dealWatcher' => 'Deal Watcher',
+    'pendingTimelog' => 'Pending Timelogs',
     'showContact' => 'Contact Details',
     'signBy' => 'Sign By',
     'leaveArchive' => 'Inactive',
@@ -47,6 +48,9 @@ return array(
     'completion' => 'Completion',
     'address' => 'Address',
     'completed' => 'Completed',
+    'to_do' => 'To Do',
+    'doing' => 'Doing',
+    'waiting_approval' => 'Waiting Approval',
     'failed' => 'Failed',
     'dueDate' => 'Due Date',
     'status' => 'Status',
@@ -210,6 +214,9 @@ return array(
         'reports' => 'Reports',
         'taskReport' => 'Task Report',
         'timeLogReport' => 'Time Log Report',
+        'weeklyTimehsheet' => 'Weekly Timesheet',
+        'weeklypPendingTimehsheet' => 'Pending Weekly Timesheet',
+        'employeeName' => 'Employee Name',
         'timeSettings' => 'Time Settings',
         'accountSettings' => 'Company Settings',
         'moduleSettings' => 'Module Settings',
@@ -1302,4 +1309,3 @@ return array(
     'timesheetRejectReason' => 'Timesheet Reject Reason',
     'projectWiseTimeLogReport' => 'Project Wise Report',
 );
-

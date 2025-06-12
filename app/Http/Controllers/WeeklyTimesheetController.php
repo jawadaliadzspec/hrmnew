@@ -38,13 +38,6 @@ class WeeklyTimesheetController extends AccountBaseController
         // get the user with the relation
         $loginedUser = User::with('reportingTeam')->find(user()->id); 
         $this->teamMembersCount = $loginedUser->reportingTeam ? $loginedUser->reportingTeam->count() : 0;
-
-        if( 
-            !($this->teamMembersCount > 0 || in_array('admin', user_roles()))
-            ) {
-            abort_403(true);
-        }
-
         $teamMembersIds = $loginedUser->reportingTeam ? $loginedUser->reportingTeam->pluck('user_id')->toArray() : [];
         
 
@@ -55,6 +48,13 @@ class WeeklyTimesheetController extends AccountBaseController
         }
 
         if (request()->view == 'pending_approval') {
+            
+            if( 
+                !($this->teamMembersCount > 0 || in_array('admin', user_roles()))
+                ) {
+                abort_403(true);
+            }
+    
             $this->weeklyTimesheet = WeeklyTimesheet::where('weekly_timesheets.status', 'pending');
 
             if ($this->teamMembersCount > 0 && !in_array('admin', user_roles())) {
@@ -128,6 +128,9 @@ class WeeklyTimesheetController extends AccountBaseController
                 });
             })
             ->with('project:id,project_name')
+            ->whereHas('project', function ($query) {
+                $query->where('status', '!=', 'finished');
+            })
             ->select('tasks.id', 'tasks.heading', 'tasks.project_id')
             ->get();
 
@@ -144,6 +147,20 @@ class WeeklyTimesheetController extends AccountBaseController
         $taskIds = $request->task_ids;
         $dates = $request->dates;
         $hours = $request->hours;
+        // Check if at least one hour value is greater than 0
+        $hasHours = false;
+        foreach ($hours as $hourRow) {
+            foreach ($hourRow as $hour) {
+            if ($hour > 0) {
+                $hasHours = true;
+                break 2;
+            }
+            }
+        }
+
+        if (!$hasHours) {
+            return Reply::error(__('messages.enterAtLeastOneHour'));
+        }
 
         $this->validate($request, [
             'task_ids' => 'required'

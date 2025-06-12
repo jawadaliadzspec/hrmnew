@@ -29,6 +29,10 @@
             overflow-y: auto;
         }
 
+        div#description3 {
+            height: 100px;
+        }
+
         .ticket-activity .recent-ticket-inner:before {
             background-color: #99a5b5;
             content: "";
@@ -77,12 +81,19 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
             <a href="javascript:;" class="d-flex align-items-center height-44 text-dark-grey  border-right-grey px-3 note-button"><i
                     class="fa fa-clipboard-list mr-0 mr-lg-2 mr-md-2"></i><span class="d-none d-lg-block d-md-block">@lang('app.addNote')</span></a>
         @endif
-        <div id="ticket-closed" @if ($ticket->status == 'closed') style="display:none" @endif>
-            <a href="javascript:;" data-status="closed"
-                class="d-flex align-items-center height-44 text-dark-grey  border-right-grey px-3 submit-ticket"><i
-                    class="fa fa-times-circle mr-0 mr-lg-2 mr-md-2"></i><span
-                    class="d-none d-lg-block d-md-block">@lang('app.close')</span></a>
-        </div>
+
+        @if ($editTicketPermission == 'all'
+                        || ($editTicketPermission == 'added' && user()->id == $ticket->added_by)
+                        || ($editTicketPermission == 'owned' && (user()->id == $ticket->user_id || $ticket->agent_id == user()->id))
+                        || ($editTicketPermission == 'both' && (user()->id == $ticket->user_id || $ticket->agent_id == user()->id || $ticket->added_by == user()->id)))
+            <div id="ticket-closed" @if ($ticket->status == 'closed') style="display:none" @endif>
+                <a href="javascript:;" data-status="closed"
+                    class="d-flex align-items-center height-44 text-dark-grey  border-right-grey px-3 submit-ticket"><i
+                        class="fa fa-times-circle mr-0 mr-lg-2 mr-md-2"></i><span
+                        class="d-none d-lg-block d-md-block">@lang('app.close')</span></a>
+            </div>
+
+        @endif
 
         @if ($deleteTicketPermission == 'all' || ($deleteTicketPermission == 'owned' && $ticket->agent_id == user()->id))
             <a href="javascript:;"
@@ -139,10 +150,33 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
                                 $statusColor = 'blue';
                             @endphp
                         @endif
-                        <p class="mb-0  ticket-status">
+                        {{-- <p class="mb-0  ticket-status">
                            {!! $ticket->badge('span') !!}
                             <x-status :color="$statusColor" :value="__('app.'. $ticket->status)" />
-                        </p>
+
+                        </p> --}}
+
+                        <div class="d-flex align-items-center justify-content-between ticket-status">
+                            <div class="d-flex align-items-center">
+                                {!! $ticket->badge('span') !!}
+                                <x-status :color="$statusColor" :value="__('app.'. $ticket->status)" />
+                            </div>
+
+                            @if ($canEditTicket || $isEditable)
+                                <div class="ml-2">
+                                    <div class="dropdown">
+                                        <a class="task_view_more d-flex align-items-center justify-content-center dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="icon-options-vertical icons"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink-{{ $ticket->id }}" tabindex="0">
+                                            <a class="dropdown-item edit-ticket" href="javascript:;" id="edit-ticket" data-ticket-id="{{ $ticket->id }}">
+                                                <i class="mr-2 fa fa-edit"></i>@lang('app.edit')
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </span>
                 </div>
                 <!-- END -->
@@ -363,14 +397,14 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
             <div id="tabs">
                 <nav class="tabs px-2 border-bottom-grey">
                     <div class="nav" id="nav-tab" role="tablist">
-                        @if ($canEditTicket)
+                        @if ($canEditTicket || $isEditable)
                         <a class="nav-item nav-link f-14 active" id="nav-detail-tab" data-toggle="tab"
                             href="#nav-details" role="tab" aria-controls="nav-email"
                             aria-selected="false">@lang('app.details')</a>
                         @endif
                         <a @class([
                             'nav-item nav-link f-14',
-                            'active' => !$canEditTicket
+                            'active' => !($canEditTicket || $isEditable)
                         ])
                         id="nav-contact-tab" data-toggle="tab" href="#nav-contact"
                             role="tab" aria-controls="nav-slack" aria-selected="true">@lang('app.contact')</a>
@@ -383,7 +417,7 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
             </div>
             <div class="tab-content h-100" id="nav-tabContent">
                 <!-- DETAILS START -->
-                @if ($canEditTicket)
+                @if ($canEditTicket || $isEditable)
                 <div class="tab-pane fade h-100 show active" id="nav-details" role="tabpanel"
                     aria-labelledby="nav-detail-tab">
                     <x-form id="updateTicket1">
@@ -529,7 +563,7 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
                 <!-- CONTACT START -->
                 <div @class([
                     'tab-pane fade',
-                    'show active' => !$canEditTicket
+                    'show active' => !($canEditTicket || $isEditable)
                 ])
                 class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
                     <!-- CONTACT OWNER START  -->
@@ -707,6 +741,15 @@ $canEditTicket = ($editTicketPermission == 'all' || ($editTicketPermission == 'o
             const atValues = @json($userData);
             quillMention(atValues, '#description');
             quillMention(atValues, '#description2');
+        });
+
+        $('body').on('click', '.edit-ticket', function() {
+            var ticketId = $(this).data('ticket-id');
+            var url = "{{ route('tickets.edit_detail', ':id') }}";
+            url = url.replace(':id', ticketId);
+
+            $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
+            $.ajaxModal(MODAL_LG, url);
         });
 
         $("#user_id").selectpicker({

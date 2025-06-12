@@ -12,6 +12,7 @@
                     <x-forms.text :fieldLabel="__('app.name')"
                                   fieldName="name"
                                   fieldId="name"
+                                  :fieldReadOnly="$projectStatusSetting->status_name === 'finished'"
                                   fieldRequired="true"
                                   :fieldValue="$projectStatusSetting->status_name"/>
                 </div>

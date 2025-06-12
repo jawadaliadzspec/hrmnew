@@ -50,13 +50,14 @@ class LeaveController extends AccountBaseController
     public function index(LeaveDataTable $dataTable)
     {
         $viewPermission = user()->permission('view_leave');
+        $viewEmployeePermission = user()->permission('view_employees');
         abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
 
         $reportingTo = User::with('employeeDetail')->whereHas('employeeDetail', function ($q) {
             $q->where('reporting_to', user()->id);
         })->get();
 
-        $employee = User::allEmployees(null, true, ($viewPermission == 'all' ? 'all' : null));
+        $employee = User::allEmployees(null, true, $viewEmployeePermission);
         $this->employees = $reportingTo->merge($employee);
 
         $this->leaveTypes = LeaveType::all();
@@ -98,9 +99,10 @@ class LeaveController extends AccountBaseController
     {
         $this->addPermission = user()->permission('add_leave');
         $this->addEmployeePermission = user()->permission('add_employees');
+        $viewEmployeePermission = user()->permission('view_employees');
         abort_403(!in_array($this->addPermission, ['all', 'added']));
 
-        $this->employees = User::allEmployees(null, true, ($this->addPermission == 'all' ? 'all' : null));
+        $this->employees = User::allEmployees(null, true, $viewEmployeePermission);
 
         $this->currentDate = now()->format('Y-m-d');
 
@@ -434,6 +436,8 @@ class LeaveController extends AccountBaseController
     {
         $this->leave = Leave::with('files')->findOrFail($id);
         $this->editPermission = user()->permission('edit_leave');
+        $viewEmployeePermission = user()->permission('view_employees');
+
         abort_403(!(
             ($this->editPermission == 'all'
                 || ($this->editPermission == 'added' && $this->leave->added_by == user()->id)
@@ -457,11 +461,11 @@ class LeaveController extends AccountBaseController
             $this->leaveUser = User::withoutGlobalScope(ActiveScope::class)->with('leaveTypes')->findOrFail($this->leave->user_id);
         }
 
-        $this->employees = User::allEmployees(null, false);
+        $this->employees = User::allEmployees(null, false,$viewEmployeePermission);
         $assignedEmployee = $this->employees->where('id', $this->leave->user_id)->first();
 
         if ($assignedEmployee->status == 'active'){
-            $this->employees = User::allEmployees(null, true);
+            $this->employees = User::allEmployees(null, true,$viewEmployeePermission);
         }
 
         $this->leaveQuotas = $this->leaveUser->leaveTypes->where('leaves_remaining', '>', 0);

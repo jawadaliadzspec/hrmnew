@@ -29,6 +29,12 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                 @endif
             </h5>
 
+            @if($type == 'add' && $checkTodayHoliday)
+                <x-alert type="info" icon="info-circle">
+                    @lang('messages.holidayAlertMsg')
+                </x-alert>
+            @endif
+
             @if ($total_clock_in < $maxAttendanceInDay || $type == 'edit')
                 <x-form id="attendance-container">
                     <input type="hidden" name="attendance_date" value="{{ $date }}">
@@ -65,6 +71,35 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                             </div>
                         @endif
 
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6">
+                            <x-forms.select fieldId="location" :fieldLabel="__('app.location')" fieldName="location"
+                            search="true">
+                                @foreach ($location as $locations)
+                                    <option @if (($row->location_id == $locations->id) || (is_null($row->location_id) && $locations->is_default == 1)) selected @endif value="{{ $locations->id }}">
+                                        {{ $locations->location }}</option>
+                                @endforeach
+                            </x-forms.select>
+                        </div>
+
+                        <div class="col-lg-4 col-md-6">
+                            <x-forms.select fieldId="work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="work_from_type" fieldRequired="true"
+                            search="true" >
+                                <option @if ($row->work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
+                                <option @if ($row->work_from_type == 'home') selected @endif value="home">@lang('modules.attendance.home')</option>
+                                <option @if ($row->work_from_type == 'other') selected @endif value="other">@lang('modules.attendance.other')</option>
+                            </x-forms.select>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6"  id="otherPlace" @if ($row->work_from_type != 'other') style="display:none" @endif >
+                            <x-forms.text fieldId="working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="working_from" fieldRequired="true" :fieldValue="$row->working_from" >
+                            </x-forms.text>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -117,29 +152,29 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                     <div class="row">
 
                         <div class="col-lg-4 col-md-6">
-                            <x-forms.select fieldId="location" :fieldLabel="__('app.location')" fieldName="location"
+                            <x-forms.select fieldId="clock_out_time_location_id" :fieldLabel="__('app.location')" fieldName="clock_out_time_location_id"
                             search="true">
                                 @foreach ($location as $locations)
-                                    <option @if (($row->location_id == $locations->id) || (is_null($row->location_id) && $locations->is_default == 1)) selected @endif value="{{ $locations->id }}">
+                                    <option @if (($row->clock_out_time_location_id == $locations->id) || (is_null($row->clock_out_time_location_id) && $locations->is_default == 1)) selected @endif value="{{ $locations->id }}">
                                         {{ $locations->location }}</option>
                                 @endforeach
                             </x-forms.select>
                         </div>
 
                         <div class="col-lg-4 col-md-6">
-                            <x-forms.select fieldId="work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="work_from_type" fieldRequired="true"
+                            <x-forms.select fieldId="clock_out_time_work_from_type" :fieldLabel="__('modules.attendance.working_from')" fieldName="clock_out_time_work_from_type" fieldRequired="true"
                             search="true" >
-                                <option @if ($row->work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
-                                <option @if ($row->work_from_type == 'home') selected @endif value="home">@lang('modules.attendance.home')</option>
-                                <option @if ($row->work_from_type == 'other') selected @endif value="other">@lang('modules.attendance.other')</option>
+                                <option @if ($row->clock_out_time_work_from_type == 'office') selected @endif value="office">@lang('modules.attendance.office')</option>
+                                <option @if ($row->clock_out_time_work_from_type == 'home') selected @endif value="home">@lang('modules.attendance.home')</option>
+                                <option @if ($row->clock_out_time_work_from_type == 'other') selected @endif value="other">@lang('modules.attendance.other')</option>
                             </x-forms.select>
                         </div>
 
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-4 col-md-6"  id="otherPlace" @if ($row->work_from_type != 'other') style="display:none" @endif >
-                            <x-forms.text fieldId="working_from" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="working_from" fieldRequired="true" :fieldValue="$row->working_from" >
+                        <div class="col-lg-4 col-md-6"  id="clock_out_otherPlace" @if ($row->clock_out_time_work_from_type != 'other') style="display:none" @endif >
+                            <x-forms.text fieldId="clock_out_time_working_from" :popover="__('messages.clockOutOtherLocation')" :fieldLabel="__('modules.attendance.otherPlace')" fieldName="clock_out_time_working_from" fieldRequired="true" :fieldValue="$row->clock_out_time_working_from" >
                             </x-forms.text>
                         </div>
                     </div>
@@ -182,6 +217,10 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
             @endif
             minuteStep: 1
         });
+
+        let timeSelected = false;
+
+        // Initialize timepicker
         $('#clock-out').timepicker({
             @if(company()->time_format == 'H:i')
             showMeridian: false,
@@ -192,6 +231,11 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
 
         $('#work_from_type').change(function(){
             ($(this).val() == 'other') ? $('#otherPlace').show() : $('#otherPlace').hide();
+        });
+
+
+        $('#clock_out_time_work_from_type').change(function(){
+            ($(this).val() == 'other') ? $('#clock_out_otherPlace').show() : $('#clock_out_otherPlace').hide();
         });
 
         const saveAttendanceForm = (url) => {
@@ -286,5 +330,9 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
         });
     });
 
-
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('[data-toggle="popover"]').popover();
+        }, 500);
+    });
 </script>

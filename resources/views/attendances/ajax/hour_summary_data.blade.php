@@ -36,7 +36,7 @@ $iteration = 0;
                             @elseif ($day == 'Half Day')
                                 @if ($attendanceDate->isFuture())
                                     <span data-toggle="tooltip" data-original-title="@lang('modules.attendance.halfDay')"><i
-                                        class="fa fa-star-half-alt text-red"></i></span>                        
+                                        class="fa fa-star-half-alt text-red"></i></span>
                                 @else
                                     <a href="javascript:;" @if ($addAttendancePermission == 'all') class="edit-attendance" @endif data-user-id="{{ $userId }}"
                                             data-attendance-date="{{ $key2 }}">
@@ -49,7 +49,7 @@ $iteration = 0;
                                     data-attendance-date="{{ $key2 }}"><i
                                         class="fa fa-times text-lightest"></i></a>
                             @elseif ($day == 'Holiday')
-                                <a href="javascript:;" data-toggle="tooltip"
+                                <a href="javascript:;" data-toggle="tooltip" @if(user()->permission('add_attendance') == 'all') class="edit-attendance" @endif
                                     data-original-title="{{ $holidayOccasions[$key2] }}"
                                     data-user-id="{{ $userId }}" data-attendance-date="{{ $key2 }}"><i
                                         class="fa fa-star text-warning"></i></a>

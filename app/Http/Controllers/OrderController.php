@@ -1000,7 +1000,14 @@ class OrderController extends AccountBaseController
     public function domPdfObjectForDownload($id)
     {
         $this->invoiceSetting = invoice_setting();
-        $this->order = Order::with('client', 'unit')->findOrFail($id);
+
+        $this->order = Order::with('client', 'unit')->findOrFail($id)->withCustomFields();
+
+        $getCustomFieldGroupsWithFields = $this->order->getCustomFieldGroupsWithFields();
+        if ($getCustomFieldGroupsWithFields) {
+            $this->fields = $getCustomFieldGroupsWithFields->fields;
+        }
+
         App::setLocale($this->invoiceSetting->locale ?? 'en');
         Carbon::setLocale($this->invoiceSetting->locale ?? 'en');
 

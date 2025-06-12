@@ -22,16 +22,16 @@
                     @foreach ($allBoardColumns as $column)
                         @if($column->id != $boardColumn->id)
                             @if ($column->priority == $firstPriority)
-                                    <option value="{{$column->priority}}" priority-type="before">Before {{$column->column_name}}</option>
-                                    <option value="{{$column->priority}}" @if(!is_null($lastBoardColumn) && $lastBoardColumn->id == $column->id) selected @endif>After {{$column->column_name}}</option>
+                                    <option value="{{$column->priority}}" priority-type="before">@lang('app.before') {{ $column->column_name }}</option>
+                                    <option value="{{$column->priority}}" @if(!is_null($lastBoardColumn) && $lastBoardColumn->id == $column->id) selected @endif>@lang('app.after') {{ $column->column_name }}</option>
 
                             @elseif (isset($afterBoardColumn) && $afterBoardColumn->priority == $column->priority)
                                     @if ($boardColumn->priority == $firstPriority)
-                                        <option value="{{$column->priority - 1}}">Before {{$column->column_name}}</option>
+                                        <option value="{{$column->priority - 1}}">@lang('app.before') {{  $column->column_name }}</option>
                                     @endif
-                                        <option value="{{$column->priority}}">After {{$column->column_name}}</option>
+                                        <option value="{{$column->priority}}">@lang('app.after') {{ $column->column_name }}</option>
                             @else
-                                <option value="{{$column->priority}}" @if(!is_null($lastBoardColumn) && $lastBoardColumn->id == $column->id) selected @endif>After {{$column->column_name}}</option>
+                                <option value="{{$column->priority}}" @if(!is_null($lastBoardColumn) && $lastBoardColumn->id == $column->id) selected @endif>@lang('app.after') {{ $column->column_name }}</option>
                             @endif
                         @endif
                     @endforeach

@@ -51,8 +51,7 @@ class LeadObserver
                 event(new LeadEvent($leadContact, 'NewLeadCreated'));
             }else{
 
-                // info('leads_count:' . session('leads_count'));
-                // info('total_leads:' . session('total_leads'));
+
 
                 if (session('leads_count') == (session('total_leads'))) {
 

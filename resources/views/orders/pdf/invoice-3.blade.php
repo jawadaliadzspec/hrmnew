@@ -184,6 +184,12 @@
             text-transform: uppercase;
         }
 
+        #field-title {
+            font-size: 13px;
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+
         table {
             table-layout: fixed;
         }
@@ -285,6 +291,14 @@
             min-width: 50px;
             margin: 0 30px;
         }
+
+        #notes {
+            color: #767676;
+            font-size: 11px;
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+
         #calculate_tax .calculate_tax {
             min-height: 30px;
             min-width: 50px;
@@ -595,6 +609,33 @@
 
     </section>
 
+        {{--Custom fields data--}}
+        @if(isset($fields) && count($fields) > 0)
+            <div class="page_break"></div>
+            <h3 class="box-title m-t-20 text-center h3-border"> @lang('modules.projects.otherInfo')</h3>
+            <table  style="background: none" border="0" cellspacing="0" cellpadding="0" width="100%">
+                @foreach($fields as $field)
+                    <tr>
+                        <td style="text-align: left;background: none;" >
+                            <div id="field-title">{{ $field->label }}</div>
+                            <p id="notes">
+                                @if( $field->type == 'text' || $field->type == 'password' || $field->type == 'number' || $field->type == 'textarea')
+                                    {{$order->custom_fields_data['field_'.$field->id] ?? '-'}}
+                                @elseif($field->type == 'radio')
+                                    {{ !is_null($order->custom_fields_data['field_'.$field->id]) ? $order->custom_fields_data['field_'.$field->id] : '-' }}
+                                @elseif($field->type == 'select')
+                                    {{ (!is_null($order->custom_fields_data['field_'.$field->id]) && $order->custom_fields_data['field_'.$field->id] != '') ? $field->values[$order->custom_fields_data['field_'.$field->id]] : '-' }}
+                                @elseif($field->type == 'checkbox')
+                                    {{ !is_null($order->custom_fields_data['field_'.$field->id]) ? $order->custom_fields_data['field_'.$field->id] : '-' }}
+                                @elseif($field->type == 'date')
+                                    {{ !is_null($order->custom_fields_data['field_'.$field->id]) ? \Carbon\Carbon::parse($order->custom_fields_data['field_'.$field->id])->translatedFormat($order->company->date_format) : '--'}}
+                                @endif
+                            </p>
+                        </td>
+                    </tr>
+                @endforeach
+            </table>
+        @endif
 </div>
 </body>
 </html>

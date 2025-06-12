@@ -9,13 +9,13 @@ $addProjectCategoryPermission = user()->permission('manage_project_category');
                 <h4 class="mb-0 p-20 f-21 font-weight-normal  border-bottom-grey">
                     @lang('modules.projects.projectInfo')</h4>
                 <div class="row p-20">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <x-forms.text class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="__('modules.projects.projectName')"
                             fieldName="project_name" fieldRequired="true" fieldId="project_name"
                             :fieldValue="$template->project_name" :fieldPlaceholder="__('placeholders.project')" />
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group my-3 mr-0 mr-lg-2 mr-md-2">
                             <x-forms.label fieldId="category_id"
                                 :fieldLabel="__('modules.projects.projectCategory')">
@@ -38,6 +38,31 @@ $addProjectCategoryPermission = user()->permission('manage_project_category');
                                 @endif
                             </x-forms.input-group>
                         </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <x-forms.label class="mt-3" fieldId="sub_category_id"
+                            :fieldLabel="__('modules.client.projectSubCategory')"></x-forms.label>
+                        <x-forms.input-group>
+                            <select class="form-control select-picker" name="sub_category_id" id="sub_category_id"
+                                data-live-search="true">
+                                 <option value="">--</option>
+                                @if ($categoryData)
+                                    @forelse($categoryData as $subcategory)
+                                        <option  @selected($template->sub_category_id == $subcategory->id) value="{{ $subcategory->id }}">
+                                            {{ $subcategory->category_name }}</option>
+                                    @empty
+                                        <option value="">@lang('messages.noCategoryAdded')</option>
+                                    @endforelse
+                                @endif
+                            </select>
+
+                            @if ($addProjectCategoryPermission == 'all' || $addProjectCategoryPermission == 'added')
+                                <x-slot name="append">
+                                    <button id="addSubCategory" type="button" class="btn btn-outline-secondary border-grey" >@lang('app.add')</button>
+                                </x-slot>
+                            @endif
+                        </x-forms.input-group>
                     </div>
 
                     <div class="col-md-4">
@@ -126,6 +151,54 @@ $addProjectCategoryPermission = user()->permission('manage_project_category');
 
         $('#addProjectCategory').click(function() {
             const url = "{{ route('projectCategory.create') }}";
+            $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
+            $.ajaxModal(MODAL_LG, url);
+        });
+
+        // for sub category 
+        $('#project_category_id').change(function(e) {
+
+            let categoryId = $(this).val();
+            
+            if (categoryId === '') {
+                $('#sub_category_id').html('<option value="">--</option>');
+                $('#sub_category_id').selectpicker('refresh');
+                return; // Stop further execution when no category is selected
+            }
+
+            var url = "{{ route('project.get_project_sub_category', ':id') }}";
+            url = url.replace(':id', categoryId);
+
+            $.easyAjax({
+                url: url,
+                type: "GET",
+                success: function(response) {
+                    console.log('categoryId');
+                    console.log(categoryId);
+                    if (response.status == 'success') {
+                        console.log(categoryId);
+                        var options = [];
+                        var rData = [];
+                        rData = response.data;
+                        $.each(rData, function(index, value) {
+                            var selectData = '';
+                            selectData = '<option value="' + value.id + '">' + value
+                                .category_name + '</option>';
+                            options.push(selectData);
+                        });
+
+                        $('#sub_category_id').html('<option value="">--</option>' +
+                            options);
+                        $('#sub_category_id').selectpicker('refresh');
+                    }
+                }
+            })
+
+        });
+
+         // for sub category
+        $('#addSubCategory').click(function() {
+            const url = "{{ route('ProjectSubCategory.create') }}";
             $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
             $.ajaxModal(MODAL_LG, url);
         });

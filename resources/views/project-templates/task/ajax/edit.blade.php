@@ -87,7 +87,7 @@
                         </div>
                     </div>
 
-                    <div class="col-lg-6 col-md-12">
+                    <div class="col-lg-6 col-md-12 mt-3">
                         <x-forms.label fieldId="task_labels" :fieldLabel="__('app.label')">
                         </x-forms.label>
                         <x-forms.input-group>
@@ -110,6 +110,17 @@
                                 </x-slot>
                             @endif
                         </x-forms.input-group>
+                    </div>
+
+                     <div class="col-lg-6 col-md-6">
+                            <x-forms.select fieldName="milestone_id" fieldId="milestone-id"
+                                            :fieldLabel="__('modules.projects.milestones')">
+                                <option value="">--</option>
+                                         @foreach ($template->milestones as $item)
+                                            <option value="{{ $item->id }}"
+                                                    @selected (!is_null($task) && $item->id == $task->milestone_id) >{{ $item->milestone_title }}</option>
+                                        @endforeach
+                            </x-forms.select>
                     </div>
 
                 </div>

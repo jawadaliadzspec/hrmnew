@@ -20,6 +20,7 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ $company->favicon_url ?? '' }}">
     <meta name="msapplication-TileImage" content="{{ $company->favicon ?? '' }}">
+    <meta http-equiv="Content-Language" content="{{ $locale }}">
 
     <meta name="theme-color" content="#ffffff">
 

@@ -427,7 +427,7 @@ class TasksDataTable extends BaseDataTable
             }
         });
 
-        $datatables->addColumn('status', fn($row) => $row->boardColumn->column_name);
+        $datatables->addColumn('status', fn($row) =>  $row->boardColumn->column_name);
         $datatables->setRowId(fn($row) => 'row-' . $row->id);
         $datatables->setRowClass(fn($row) => $row->pinned_task ? 'alert-primary' : '');
         $datatables->removeColumn('project_id');

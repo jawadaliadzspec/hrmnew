@@ -10,6 +10,7 @@ $viewProjectMilestonePermission = ($project->project_admin == user()->id) ? 'all
 $viewTasksPermission = ($project->project_admin == user()->id) ? 'all' : user()->permission('view_project_tasks');
 $viewGanttPermission = ($project->project_admin == user()->id) ? 'all' : user()->permission('view_project_gantt_chart');
 $viewInvoicePermission = user()->permission('view_project_invoices');
+$viewEstimatePermission = user()->permission('view_project_estimates');
 $viewDiscussionPermission = user()->permission('view_project_discussions');
 $viewNotePermission = user()->permission('view_project_note');
 $viewFilesPermission = user()->permission('view_project_files');
@@ -83,6 +84,12 @@ $projectArchived = $project->trashed();
                     @if (in_array('invoices', user_modules()) && !is_null($project->client_id) && ($viewInvoicePermission == 'all' || ($viewInvoicePermission == 'added' && user()->id == $project->added_by) || ($viewInvoicePermission == 'owned' && user()->id == $project->client_id)))
                         <li>
                             <x-tab :href="route('projects.show', $project->id).'?tab=invoices'" :text="__('app.menu.invoices')" class="invoices" ajax="false" />
+                        </li>
+                    @endif
+
+                    @if (in_array('estimates', user_modules()) && ($viewEstimatePermission == 'all' || ($viewEstimatePermission == 'added' && user()->id == $project->added_by) || ($viewEstimatePermission == 'owned' && user()->id == $project->client_id)))
+                        <li>
+                            <x-tab :href="route('projects.show', $project->id).'?tab=estimates'" :text="__('app.menu.estimates')" class="estimates" ajax="false" />
                         </li>
                     @endif
 

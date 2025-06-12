@@ -43,6 +43,7 @@ class TaskReportController extends AccountBaseController
     public function taskChartData(Request $request)
     {
         $taskStatus = TaskboardColumn::all();
+
         $data['labels'] = $taskStatus->pluck('column_name');
         $data['colors'] = $taskStatus->pluck('label_color');
         $data['values'] = [];

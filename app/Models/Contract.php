@@ -174,7 +174,7 @@ class Contract extends BaseModel
 
     public static function lastContractNumber()
     {
-        return (int)Contract::latest()->first()?->original_contract_number ?? 0;
+        return (int)Contract::orderBy('id', 'desc')->first()?->original_contract_number ?? 0;
     }
 
     public function formatContractNumber()

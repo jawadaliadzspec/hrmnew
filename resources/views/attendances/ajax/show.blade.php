@@ -115,6 +115,9 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                                             </span>
                                         @endif
 
+                                        @if ($item->clock_in_type == 'biometric')
+                                            <i class="fa fa-fingerprint ml-2" data-toggle="tooltip" data-original-title="@lang('modules.module.biometric')"></i>
+                                        @endif
 
                                         @if ($item->latitude != '' && $item->longitude != '')
 
@@ -129,10 +132,24 @@ $deleteAttendancePermission = user()->permission('delete_attendance');
                                         <i class="fa fa-clock"></i>
                                         @if (!is_null($item->clock_out_time))
                                             {{ $item->clock_out_time->timezone(company()->timezone)->translatedFormat(company()->date_format . ' ' . company()->time_format) }}
+
+                                            @if ($item->clock_out_time_work_from_type != '')
+                                                @if ($item->clock_out_time_work_from_type == 'other')
+                                                    <i class="fa fa-map-marker-alt ml-2"></i>
+                                                    {{ $item->clockOutLocation }} {{ $item->clock_out_time_working_from != '' ? '(' . $item->clock_out_time_working_from . ')' : ''  }}
+                                                @else
+                                                    <i class="fa fa-map-marker-alt ml-2"></i>
+                                                    {{ $item->clockOutLocation }} ({{$item->clock_out_time_work_from_type}})
+                                                @endif
+                                            @endif
+
                                             @if($item->auto_clock_out)
                                                 <i class="fa fa-sign-out-alt ml-2"></i>
                                                 @lang('modules.attendance.autoClockOut')
                                             @endif
+                                            @if ($item->clock_in_type == 'biometric')
+                                            <i class="fa fa-fingerprint ml-2" data-toggle="tooltip" data-original-title="@lang('modules.module.biometric')"></i>
+                                        @endif
                                         @else
                                             @lang('modules.attendance.notClockOut')
                                         @endif

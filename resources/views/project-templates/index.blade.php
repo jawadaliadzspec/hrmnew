@@ -23,6 +23,27 @@
             </form>
         </div>
         <!-- SEARCH BY TASK END -->
+        <div class="select-box d-flex py-2 {{ !in_array('client', user_roles()) ? 'px-lg-2 px-md-2 px-0' : '' }}  border-right-grey border-right-grey-sm-0 pr-2 pl-2">
+            <p class="mb-0 pr-2 f-14 text-dark-grey d-flex align-items-center">@lang('modules.projects.projectCategory')</p>
+            <div class="select-status w-80">
+                <select class="form-control select-picker" name="project_template_category_id" id="project_template_category_id" data-live-search="true" data-size="8">
+                    
+                    <option value="all" >@lang('app.all')</option>
+                    @foreach ($categories as $category)
+                        <option value="{{$category->id}}">{{ $category->category_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        
+        <div class="select-box d-flex py-2 {{ !in_array('client', user_roles()) ? 'px-lg-2 px-md-2 px-0' : '' }}  border-right-grey border-right-grey-sm-0 pr-2 pl-2">
+            <p class="mb-0 pr-2 f-14 text-dark-grey d-flex align-items-center">@lang('modules.client.projectSubCategory')</p>
+            <div class="select-status">
+                <select class="form-control select-picker" name="project_template_sub_category_id" id="project_template_sub_category_id" data-live-search="true" data-size="8">
+                    <option value="all" >Select Project Category</option>
+                </select>
+            </div>
+        </div>
 
         <!-- RESET START -->
         <div class="select-box d-flex py-1 px-lg-2 px-md-2 px-0">
@@ -80,16 +101,26 @@
         $('#projects-template-table').on('preXhr.dt', function(e, settings, data) {
 
             var searchText = $('#search-text-field').val();
+            var projectCategoryId = $('#project_template_category_id').val();
+            var subCategoryId = $('#project_template_sub_category_id').val();
 
+            data['project_category_id'] = projectCategoryId;
+            data['sub_category_id'] = subCategoryId;
             data['searchText'] = searchText;
         });
         const showTable = () => {
             window.LaravelDataTables["projects-template-table"].draw(true);
         }
 
-        $('#search-text-field').on('change keyup',
+        $('#search-text-field,#project_template_category_id,#project_template_sub_category_id').on('change keyup',
             function() {
                 if ($('#search-text-field').val() != "") {
+                    $('#reset-filters').removeClass('d-none');
+                    showTable();
+                } else if ($('#project_template_category_id').val() != "all") {
+                    $('#reset-filters').removeClass('d-none');
+                    showTable();
+                } else if ($('#project_template_sub_category_id').val() != "all") {
                     $('#reset-filters').removeClass('d-none');
                     showTable();
                 } else {
@@ -121,6 +152,47 @@
                 $('#quick-action-apply').attr('disabled', true);
                 $('.quick-action-field').addClass('d-none');
             }
+        });
+
+         // for sub category
+        $('#project_template_category_id').change(function(e) {
+
+            let categoryId = $(this).val();
+            
+            if (categoryId === '') {
+                $('#project_template_sub_category_id').html('<option value="">--</option>');
+                $('#project_template_sub_category_id').selectpicker('refresh');
+                return; // Stop further execution when no category is selected
+            }
+
+            var url = "{{ route('project.get_project_sub_category', ':id') }}";
+            url = url.replace(':id', categoryId);
+
+            $.easyAjax({
+                url: url,
+                type: "GET",
+                success: function(response) {
+                    console.log('categoryId');
+                    console.log(categoryId);
+                    if (response.status == 'success') {
+                        console.log(categoryId);
+                        var options = [];
+                        var rData = [];
+                        rData = response.data;
+                        $.each(rData, function(index, value) {
+                            var selectData = '';
+                            selectData = '<option value="' + value.id + '">' + value
+                                .category_name + '</option>';
+                            options.push(selectData);
+                        });
+
+                        $('#project_template_sub_category_id').html('<option value="all">--</option>' +
+                            options);
+                        $('#project_template_sub_category_id').selectpicker('refresh');
+                    }
+                }
+            })
+
         });
 
         $('#quick-action-apply').click(function() {

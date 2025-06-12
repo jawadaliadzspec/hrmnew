@@ -40,7 +40,7 @@
                                     fieldName="lead_contact" fieldRequired="true">
                         <option value="">--</option>
                         @foreach ($leadContacts as $leadContact)
-                            <option value="{{ $leadContact->id }}">
+                            <option @if (isset($proposal)) @selected ($leadContact->id == $proposal->deal->lead_id) @endif value="{{ $leadContact->id }}">
                                 {{ $leadContact->client_name_salutation }}</option>
                         @endforeach
                     </x-forms.select>
@@ -52,7 +52,8 @@
                             data-size="8">
                         <option value="">--</option>
                         @foreach ($deals as $clientOpt)
-                            <option @if ($proposalTemplate && $clientOpt->id == $proposalTemplate->deal_id) selected
+                            <option @if (isset($proposal) && ($clientOpt->id == $proposal->deal->id)) selected
+                                    @elseif ($proposalTemplate && $clientOpt->id == $proposalTemplate->deal_id) selected
                                     @endif value="{{ $clientOpt->id }}">
                                 {{ $clientOpt->name }}</option>
                         @endforeach
@@ -80,10 +81,10 @@
                 <x-forms.select :fieldLabel="__('modules.invoices.currency')" fieldName="currency_id"
                                 field_id="currency_id">
                     @foreach ($currencies as $currency)
-                        <option @if (isset($proposalTemplate) && $currency->id == $proposalTemplate->currency_id)
-                                    selected
-                                @elseif ($currency->id == company()->currency_id)
-                                    selected
+                        <option
+                            @if (isset($proposal)) @selected ($currency->id == $proposal->currency_id)
+                            @else @selected ($currency->id == company()->currency_id)
+                                @selected (isset($proposalTemplate) && $currency->id == $proposalTemplate->currency_id)
                                 @endif
                                 value="{{ $currency->id }}">
                             {{ $currency->currency_code . ' (' . $currency->currency_symbol . ')' }}
@@ -123,7 +124,7 @@
                 <div class="form-group">
                     <x-forms.label fieldId="description" :fieldLabel="__('app.description')">
                     </x-forms.label>
-                    <div id="description">{!! $proposalTemplate ? $proposalTemplate->description : '' !!}</div>
+                    <div id="description">{!! isset($proposal) ? $proposal->description : ($proposalTemplate ? $proposalTemplate->description : '') !!}</div>
                     <textarea name="description" id="description-text" class="d-none"></textarea>
                 </div>
             </div>
@@ -190,7 +191,129 @@
         </div>
 
         <div id="sortable">
-            @if (isset($estimate))
+            @if (isset($proposal))
+                @foreach ($proposal->items as $key => $item)
+                    <!-- DESKTOP DESCRIPTION TABLE START -->
+                    <div class="d-flex px-4 py-3 c-inv-desc item-row">
+                        <div class="d-flex align-items-center">
+                            <span class="ui-icon ui-icon-arrowthick-2-n-s mr-2"></span>
+                            <input type="hidden" name="sort_order[]"
+                                    value="1">
+                        </div>
+
+                        <div class="c-inv-desc-table w-100 d-lg-flex d-md-flex d-block">
+                            <table width="100%">
+                                <tbody>
+                                <tr class="text-dark-grey font-weight-bold f-14">
+                                    <td width="40%" class="border-0 inv-desc-mbl btlr">@lang('app.description')</td>
+                                    @if ($invoiceSetting->hsn_sac_code_show)
+                                        <td width="10%" class="border-0" align="right">@lang("app.hsnSac")
+                                        </td>
+                                    @endif
+                                    <td width="10%" class="border-0" align="right">
+                                        @lang('modules.invoices.qty')
+                                    </td>
+                                    <td width="10%" class="border-0" align="right">
+                                        @lang("modules.invoices.unitPrice")</td>
+                                    <td width="13%" class="border-0" align="right">
+                                        @lang('modules.invoices.tax')
+                                    </td>
+                                    <td width="17%" class="border-0 bblr-mbl" align="right">
+                                        @lang('modules.invoices.amount')</td>
+                                </tr>
+                                <tr>
+                                    <td class="border-bottom-0 btrr-mbl btlr">
+                                        <input type="text" class="f-14 border-0 w-100 item_name form-control"
+                                               name="item_name[]"
+                                               placeholder="@lang('modules.expenses.itemName')"
+                                               value="{{ $item->item_name }}">
+                                    </td>
+                                    <td class="border-bottom-0 d-block d-lg-none d-md-none">
+                                            <textarea class="f-14 border-0 w-100 mobile-description form-control"
+                                                      placeholder="@lang('placeholders.invoices.description')"
+                                                      name="item_summary[]">{{ $item->item_summary }}</textarea>
+                                    </td>
+                                    @if ($invoiceSetting->hsn_sac_code_show)
+                                        <td class="border-bottom-0">
+                                            <input type="text" min="1"
+                                                   class="f-14 border-0 w-100 text-right hsn_sac_code form-control"
+                                                   value="{{ $item->hsn_sac_code }}" name="hsn_sac_code[]">
+                                        </td>
+                                    @endif
+                                    <td class="border-bottom-0">
+                                        <input type="number" min="1"
+                                               class="f-14 border-0 w-100 text-right quantity form-control mt-3"
+                                               value="{{ $item->quantity }}" name="quantity[]">
+                                        @if (!is_null($item->product_id) && $item->product_id != 0)
+                                            <span
+                                                class="text-dark-grey float-right border-0 f-12">{{ $item->unit->unit_type }}</span>
+                                            <input type="hidden" name="product_id[]" value="{{ $item->product_id }}">
+                                            <input type="hidden" name="unit_id[]" value="{{ $item->unit_id }}">
+                                        @else
+                                            <select class="text-dark-grey float-right border-0 f-12" name="unit_id[]">
+                                                @foreach ($units as $unit)
+                                                    <option
+                                                        @if ($item->unit_id == $unit->id) selected @endif
+                                                    value="{{ $unit->id }}">{{ $unit->unit_type }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="hidden" name="product_id[]" value="">
+                                        @endif
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <input type="number" min="1"
+                                               class="f-14 border-0 w-100 text-right cost_per_item form-control"
+                                               placeholder="0.00"
+                                               value="{{ $item->unit_price }}" name="cost_per_item[]">
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="select-others height-35 rounded border-0">
+                                            <select id="multiselect" name="taxes[{{ $key }}][]"
+                                                    multiple="multiple"
+                                                    class="select-picker type customSequence border-0" data-size="3">
+                                                @foreach ($taxes as $tax)
+                                                    <option data-rate="{{ $tax->rate_percent }}"
+                                                            data-tax-text="{{ $tax->tax_name .':'. $tax->rate_percent }}%"
+                                                            @if (isset($item->taxes) && array_search($tax->id, json_decode($item->taxes)) !== false) selected
+                                                            @endif value="{{ $tax->id }}">
+                                                        {{ $tax->tax_name }}:
+                                                        {{ $tax->rate_percent }}%
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td rowspan="2" align="right" valign="top" class="bg-amt-grey btrr-bbrr">
+                                            <span
+                                                class="amount-html">{{ number_format((float) $item->amount, 2, '.', '') }}</span>
+                                        <input type="hidden" class="amount" name="amount[]"
+                                               value="{{ $item->amount }}">
+                                    </td>
+                                </tr>
+                                <tr class="d-none d-md-block d-lg-table-row">
+                                    <td colspan="{{ $invoiceSetting->hsn_sac_code_show ? '4' : '3' }}"
+                                        class="dash-border-top bblr">
+                                            <textarea class="f-14 border-0 w-100 desktop-description form-control"
+                                                      name="item_summary[]"
+                                                      placeholder="@lang('placeholders.invoices.description')">{{ $item->item_summary }}</textarea>
+                                    </td>
+                                    <td class="border-left-0">
+                                        <input type="file" class="dropify" name="invoice_item_image[]"
+                                               data-allowed-file-extensions="png jpg jpeg bmp"
+                                               data-messages-default="test" data-height="70"/>
+                                        <input type="hidden" name="invoice_item_image_url[]">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <a href="javascript:;"
+                               class="d-flex align-items-center justify-content-center ml-3 remove-item"><i
+                                    class="fa fa-times-circle f-20 text-lightest"></i></a>
+                        </div>
+                    </div>
+                    <!-- DESKTOP DESCRIPTION TABLE END -->
+                @endforeach
+            @elseif (isset($estimate))
                 @foreach ($estimate->items as $key => $item)
                     <!-- DESKTOP DESCRIPTION TABLE START -->
                     <div class="d-flex px-4 py-3 c-inv-desc item-row">
@@ -587,7 +710,7 @@
                                                 <input type="number" min="0" name="discount_value"
                                                        class="f-14 border-0 w-100 text-right discount_value"
                                                        placeholder="0"
-                                                       value="{{ isset($proposalTemplate) ? $proposalTemplate->discount : '0' }}">
+                                                       value="{{ isset($proposal) ? number_format((float) $proposal->discount, 2, '.', '') : ($proposalTemplate ? number_format((float) $proposalTemplate->discount, 2, '.', '') : '0.00') }}">
                                             </td>
                                             <td width="30%" align="left" class="c-inv-sub-padding">
                                                 <div
@@ -595,11 +718,13 @@
                                                     <select class="form-control select-picker"
                                                             id="discount_type" name="discount_type">
                                                         <option
-                                                            @if (isset($proposalTemplate) && $proposalTemplate->discount_type == 'percent') selected
+                                                            @if (isset($proposal) && $proposal->discount_type == 'percent') selected
+                                                            @elseif(isset($proposalTemplate) && $proposalTemplate->discount_type == 'percent') selected
                                                             @endif value="percent">%
                                                         </option>
                                                         <option
-                                                            @if (isset($proposalTemplate) && $proposalTemplate->discount_type == 'fixed') selected
+                                                            @if (isset($proposal) && $proposal->discount_type == 'fixed') selected
+                                                            @elseif (isset($proposalTemplate) && $proposalTemplate->discount_type == 'fixed') selected
                                                             @endif value="fixed">
                                                             @lang('modules.invoices.amount')</option>
                                                     </select>
@@ -611,7 +736,7 @@
                                 </td>
                                 <td>
                                             <span
-                                                id="discount_amount">{{ isset($proposalTemplate) ? number_format((float) $proposalTemplate->discount, 2, '.', '') : '0.00' }}
+                                                id="discount_amount">{{ isset($proposal) ? number_format((float) $proposal->discount, 2, '.', '') : ($proposalTemplate ? number_format((float) $proposalTemplate->discount, 2, '.', '') : '0.00') }}
                                             </span>
                                 </td>
                             </tr>
@@ -814,6 +939,27 @@
         }
 
         function addProduct(id) {
+
+            var existingRow = $(`input[name="product_id[]"][value="${id}"]`).closest('.item-row');
+
+            if (existingRow.length) {
+                // Increase quantity
+                let qtyInput = existingRow.find('input.quantity');
+                let currentQty = parseFloat(qtyInput.val());
+                qtyInput.val(currentQty + 1).trigger('change'); // Trigger change to recalculate amount
+
+                let cost = existingRow.find('input.cost_per_item');
+                let amountHtml = existingRow.find('span.amount-html');
+                let amount = existingRow.find('input.amount');
+                let newAmount = (qtyInput.val() * cost.val());
+                amountHtml.html(newAmount).trigger('change');
+                amount.val(newAmount).trigger('change');
+
+                calculateTotal();
+
+                return; // Exit the function
+            }
+
             var currencyId = $('#currency_id').val();
 
             $.easyAjax({
@@ -890,7 +1036,7 @@
                 `<select class="text-dark-grey float-right border-0 f-12" name="unit_id[]">
                     @foreach ($units as $unit)
                 <option
-@if ($unit->default == 1) selected @endif
+                @if ($unit->default == 1) selected @endif
                 value="{{ $unit->id }}">{{ $unit->unit_type }}</option>
                     @endforeach
                 </select>

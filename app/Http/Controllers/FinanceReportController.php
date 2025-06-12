@@ -22,6 +22,8 @@ class FinanceReportController extends AccountBaseController
 
     public function index(FinanceReportDataTable $dataTable)
     {
+        abort_403(user()->permission('view_finance_report') != 'all');
+
         $this->fromDate = now($this->company->timezone)->startOfMonth();
         $this->toDate = now($this->company->timezone);
         $this->currencies = Currency::all();

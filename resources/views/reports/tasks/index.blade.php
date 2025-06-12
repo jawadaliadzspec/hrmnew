@@ -27,7 +27,7 @@
                     <option value="all">@lang('app.all')</option>
                     <option value="not finished">@lang('modules.tasks.hideCompletedTask')</option>
                     @foreach ($taskBoardStatus as $status)
-                        <option value="{{ $status->id }}">{{ $status->slug == 'completed' || $status->slug == 'incomplete' ? __('app.' . $status->slug) : $status->column_name }}</option>
+                        <option value="{{ $status->id }}">{{ $status->slug == 'completed' || $status->slug == 'incomplete' ? __('app.' . $status->slug) :   $status->column_name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -176,7 +176,7 @@
 
                             <a href="{{ route('employee-wise-task-report') }}" class="btn btn-secondary f-14" data-toggle="tooltip"
                             data-original-title="@lang('modules.tasks.employeeWiseTaskReport')"><i class="side-icon bi bi-people-fill"></i></a>
-                            
+
                             <a href="{{ route('consolidated-task-report') }}" class="btn btn-secondary f-14 " data-toggle="tooltip"
                              data-original-title="@lang('modules.tasks.consolidatedTaskReport')"><i class="side-icon bi bi-calendar-fill"></i></a>
                     </div>
